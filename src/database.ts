@@ -1,5 +1,5 @@
 
-import mySql from 'mysql2';
+import mySql from 'mysql2/promise';
 import dotenv from 'dotenv';
 dotenv.config();
 const pool = mySql.createPool({
@@ -9,4 +9,4 @@ const pool = mySql.createPool({
     password: process.env.mysqlPassword,
 })
 
-export default pool.promise();
+export default pool;

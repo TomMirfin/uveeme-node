@@ -2,17 +2,20 @@ import express from 'express';
 import usersRoutes from './routes/users';
 import groupsRoutes from './routes/groups';
 import db from './database';
-const app = express();
 import dotenv from 'dotenv';
+import bodyParser from 'body-parser';
 dotenv.config();
-// Middleware to parse JSON bodies
-app.use(express.json());
-const PORT = process.env.SERVER_PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
 
+const app = express();
+const PORT = process.env.SERVER_PORT || 3000;
+
+app.use(bodyParser.json())
+
+// Middleware to parse JSON and URL-encoded bodies
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Route handlers
 app.use('/users', usersRoutes);
 app.use('/groups', groupsRoutes);
 
@@ -22,8 +25,10 @@ app.use((err: any, req: any, res: any, next: any) => {
     res.status(500).send('Something broke!');
 });
 
-
-
+// Start the server
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
 
 // Properly close the database connection when needed
 process.on('SIGINT', () => {

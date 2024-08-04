@@ -33,7 +33,6 @@ describe.skip('Users API', () => {
             email: 'Jodi@example.com',
             profilePictureUrl: 'http://example.com/john.jpg',
             dob: new Date('1990-01-01').toISOString().split('T')[0],
-
             phoneNumber: '1234567890',
             updatedOn: new Date().toISOString().split('T')[0],
             associatedGroupNames: ['Group A', 'Group B'],

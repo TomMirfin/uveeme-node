@@ -4,9 +4,11 @@ import express from 'express';
 import database from '../src/database';
 
 const app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use('/groups', groupsRoutes);
 
-app.use(express.json());
+
 describe('Groups API', () => {
 
 
@@ -26,20 +28,16 @@ describe('Groups API', () => {
 
     it('should create a new group', async () => {
         const newGroup = {
-            name: 'Team Alpha',
+            name: 'Team on the tester',
             description: 'This is a description of Team Alpha.',
-            membersNames: ['Alice', 'Bob', 'Charlie'], // JSON array format
-            memberTypes: ['Admin', 'Member', 'Member'],
-            membersIds: [1, 2, 3], // JSON array format
-            scoreByMember: { 'Alice': 80, 'Bob': 75, 'Charlie': 90 }, // JSON object format
-            lastEvent: '2024-08-01', // Date in YYYY-MM-DD format
-            nextEvent: '2024-12-01', // Date in YYYY-MM-DD format
-            groupImage: 'http://example.com/team-alpha.jpg',
-            totalScore: 250
         };
 
-        const response = await request(app).post('/groups').send(newGroup);
+        const response = await request(app)
+            .post('/groups')
+            .send(newGroup)
+            .set('Content-Type', 'application/json');
 
+        // Assertions
         expect(response.status).toBe(201);
         expect(response.body).toHaveProperty('insertId');
     });
@@ -55,11 +53,12 @@ describe('Groups API', () => {
     //     expect(response.body.affectedRows).toBe(1); // Assuming API returns affected rows
     // });
 
-    // it('should delete a group by ID', async () => {
-    //     const response = await request(app).delete(`/groups/${testGroupId}`);
-    //     expect(response.status).toBe(200);
-    //     expect(response.body.affectedRows).toBe(1); // Assuming API returns affected rows
-    // });
+    it('should delete a group by ID', async () => {
+        const testGroupId = '550e8400-e29b-41d4-a716-44665544234';
+        const response = await request(app).delete(`/groups/${testGroupId}`);
+        expect(response.status).toBe(204);
+
+    });
 
     // it('should add a user to a group', async () => {
     //     const newUser = {

@@ -53,8 +53,9 @@ export const createGroupQuery = async (
     scoreByMember: Record<string, number> = {},  // JSON object for scores
     lastEvent: Date | null = null,
     nextEvent: Date | null = null,
-    groupImage: string = 'http://example.com/default-image.jpg',
+    groupImage: string = '',
     totalScore: number = 0
+
 ) => {
     const id = uuidv4();
     try {
@@ -112,10 +113,10 @@ export const alterGroupQuery = async (id: string, name: string, groupImage: stri
 export const deleteGroupQuery = async (id: number) => {
     try {
         const query = `
-            DELETE FROM groups
+            DELETE FROM \`groups\`
             WHERE id = ?
         `;
-        const [result] = await db.query(query, [id]);
+        const [result] = await db.query(query, [id])
     }
     catch (error) {
         console.error('Error deleting group:', error);
