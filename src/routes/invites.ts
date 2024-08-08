@@ -1,5 +1,5 @@
 import express from 'express';
-import { getInvitesForUser, sendInviteTo, acceptInvite, declineInvite, getInviteById, getInvitesForGroup } from '../controllers/invitescontroller';
+import { getInvitesForUser, sendInviteTo, acceptInvite, declineInvite, getInviteById, getInvitesForGroup } from '../controllers/invitesController';
 
 const router = express.Router();
 

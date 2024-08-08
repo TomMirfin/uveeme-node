@@ -1,5 +1,6 @@
 import db from '../database';
-
+import { v4 as uuidv4 } from 'uuid';
+import Response from 'express';
 export const getAllInvitesQuery = async (id: number) => {
     try {
         const query = `
@@ -14,20 +15,32 @@ export const getAllInvitesQuery = async (id: number) => {
     }
 }
 
-export const sendInviteToQuery = async (inviter: number, invitee: number, groupId: number) => {
+export const sendInviteToQuery = async (inviter: string, invitee: string, groupId: string, res: Response) => {
     const status = 'PENDING';
+    const id = uuidv4();
+
     try {
+        const [inviteeRows] = await db.query('SELECT * FROM `groups` WHERE invitee = ?', [invitee]);
+        if (inviteeRows) {
+            return null
+        }
+
+        const [inviterRows] = await db.query('SELECT * FROM `groups` WHERE inviter = ?', [inviter]);
+        if (!inviterRows) {
+            return null
+        }
+
         const query = `
-            INSERT INTO invites (inviter, invitee, groupId, status)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO groupinvites (id, inviter, invitee, groupId, status)
+            VALUES (?, ?, ?, ?, ?)
         `;
-        const [result] = await db.query(query, [inviter, invitee, groupId, status]);
+        const [result] = await db.query(query, [id, inviter, invitee, groupId, status]);
         return result;
     } catch (error) {
         console.error('Error sending invite:', error);
         throw error;
     }
-}
+};
 
 export const acceptInviteQuery = async (inviteId: number) => {
     try {
