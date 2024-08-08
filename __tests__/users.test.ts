@@ -1,13 +1,16 @@
 import request from 'supertest';
 import express from 'express';
 import usersRoutes from '../src/routes/users';
-
+import database from '../src/database';
 
 
 const app = express();
 app.use(express.json());
 app.use('/users', usersRoutes);
-
+afterAll(async () => {
+    // Clean up database and close connection
+    await database.end();
+});
 describe.skip('Users API', () => {
 
 

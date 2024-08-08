@@ -63,8 +63,8 @@ export const createGroup = async (req: any, res: any, next: any) => {
 
 export const alterGroup = (req: any, res: any, next: any) => {
     const { id } = req.params;
-    const { name, groupImage } = req.body;
-    alterGroupQuery(id, name, groupImage).then((rows: any) => { res.status(200).send(rows) });
+    const { name, description, groupImage } = req.body;
+    alterGroupQuery(id, name, description, groupImage).then((rows: any) => { res.status(200).send(rows) });
 }
 
 export const deleteGroup = (req: any, res: any, next: any) => {

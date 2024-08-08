@@ -22,6 +22,7 @@ export const getAllGroupsWithUserQuery = async (id: string) => {
             ON groups.id = users.associatedGroupsId
         `;
         const [result] = await db.query(query);
+        console.log(result);
         return result;
     } catch (error) {
         console.error('Error getting groups:', error);
@@ -90,24 +91,38 @@ export const createGroupQuery = async (
 
 
 
-export const alterGroupQuery = async (id: string, name: string, groupImage: string) => {
+export const alterGroupQuery = async (
+    id: string,
+    name: string,
+    description: string,
+    groupImage: string
+) => {
+    let query;
+    let values;
+
+    if (!name) {
+        query = `UPDATE \`groups\` SET description = ?, groupImage = ? WHERE id = ?`;
+        values = [description, groupImage, id];
+    } else if (!description) {
+        query = `UPDATE \`groups\` SET name = ?, groupImage = ? WHERE id = ?`;
+        values = [name, groupImage, id];
+    } else if (!groupImage) {
+        query = `UPDATE \`groups\` SET name = ?, description = ? WHERE id = ?`;
+        values = [name, description, id];
+    } else {
+        query = `UPDATE \`groups\` SET name = ?, description = ?, groupImage = ? WHERE id = ?`;
+        values = [name, description, groupImage, id];
+    }
+
     try {
-        const query = `
-            UPDATE groups
-            SET name = ?,
-                description = ?,
-                updatedOn = ?,
-                groupImage = ?
-            WHERE id = ?
-        `;
-        const values = [name, id, groupImage];
         const [result] = await db.query(query, values);
         return result;
     } catch (error) {
         console.error('Error updating group:', error);
         throw error;
     }
-}
+};
+
 
 
 export const deleteGroupQuery = async (id: number) => {

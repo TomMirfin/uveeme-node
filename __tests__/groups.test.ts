@@ -8,6 +8,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/groups', groupsRoutes);
 
+afterAll(async () => {
+    // Clean up database and close connection
+    await database.end();
+});
 
 describe('Groups API', () => {
 
@@ -42,16 +46,16 @@ describe('Groups API', () => {
         expect(response.body).toHaveProperty('insertId');
     });
 
-    // it('should update a group by ID', async () => {
-    //     const updatedGroup = {
-    //         name: 'Team Beta Updated',
-    //         groupImage: 'http://example.com/team-beta-updated.jpg'
-    //     };
+    it('should update a group by ID', async () => {
+        const testGroupId = "550e8400-e29b-41d4-a716-446655440000"
+        const updatedGroup = {
+            name: 'Team Beta Updated two',
+        };
 
-    //     const response = await request(app).put(`/groups/${testGroupId}`).send(updatedGroup);
-    //     expect(response.status).toBe(200);
-    //     expect(response.body.affectedRows).toBe(1); // Assuming API returns affected rows
-    // });
+        const response = await request(app).patch(`/groups/${testGroupId}`).send(updatedGroup);
+        expect(response.status).toBe(200);
+        expect(response.body).toHaveProperty([{ "affectedRows": 1 }]);
+    });
 
     it('should delete a group by ID', async () => {
         const testGroupId = '550e8400-e29b-41d4-a716-44665544234';
@@ -59,6 +63,14 @@ describe('Groups API', () => {
         expect(response.status).toBe(204);
 
     });
+    it.only('should fetch all groups where user is a member', async () => {
+        const testUserId = '550e8400-e29b-41d4-a716-446655440001';
+        const response = await request(app).get(`/groups/users/${testUserId}`);
+        expect(response.status).toBe(200);
+        expect(Array.isArray(response.body)).toBe(true);
+    });
+
+
 
     // it('should add a user to a group', async () => {
     //     const newUser = {

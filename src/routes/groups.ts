@@ -6,9 +6,9 @@ const router = express.Router();
 
 router.get('/', getAllGroups);
 router.get('/:id', getGroupById);
-router.get('/:id', getGroupsContainingUser);
+router.get('/users/:id', getGroupsContainingUser);
 router.post('/', createGroup);
-router.put('/:id/change', alterGroup);
+router.patch('/:id', alterGroup);
 router.delete('/:id', deleteGroup);
 
 export default router;
