@@ -1,4 +1,4 @@
-import { getAllGroupsQuery, getAllGroupsWithUserQuery, getGroupByIdQuery, createGroupQuery, alterGroupQuery, deleteGroupQuery, addUserToGroupQuery } from "../models/groupsModels";
+import { getAllGroupsQuery, getAllGroupsWithUserQuery, getGroupByIdQuery, createGroupQuery, alterGroupQuery, deleteGroupQuery, addUserToGroupQuery, makeAdminQuery, removeAdminQuery } from '../models/groupsModels';
 
 export const getAllGroups = async (req: any, res: any, next: any) => {
     console.log('getAllGroups');
@@ -27,13 +27,14 @@ export const createGroup = async (req: any, res: any, next: any) => {
             name,
             description,
             membersNames = [],
-            memberTypes = [],
+            memberTypes = [{}],
             membersIds = [],
             scoreByMember = {},
             lastEvent = new Date(),
             nextEvent = new Date(),
             groupImage = '',
-            totalScore = 0
+            totalScore = 0,
+            admin = []
         } = req.body;
 
         if (!name || !description) {
@@ -50,7 +51,8 @@ export const createGroup = async (req: any, res: any, next: any) => {
             lastEvent,
             nextEvent,
             groupImage,
-            totalScore
+            totalScore,
+            admin
         );
 
         res.status(201).send(rows);
@@ -70,4 +72,14 @@ export const alterGroup = (req: any, res: any, next: any) => {
 export const deleteGroup = (req: any, res: any, next: any) => {
     const { id } = req.params;
     deleteGroupQuery(id).then((rows: any) => { res.status(204).send(`Group ${id} deleted`) });
+}
+
+export const makeAdmin = (req: any, res: any, next: any) => {
+    const { groupId, userId, userName } = req.body;
+    makeAdminQuery(groupId, userId, userName).then((rows: any) => { res.status(200).send(rows) });
+}
+
+export const deleteAdmin = (req: any, res: any, next: any) => {
+    const { groupId, userId } = req.body;
+    removeAdminQuery(groupId, userId).then((rows: any) => { res.status(200).send(rows) });
 }

@@ -4,7 +4,7 @@ import Response from 'express';
 export const getAllInvitesQuery = async (id: number) => {
     try {
         const query = `
-            SELECT * FROM invites
+            SELECT * FROM groupinvites
             WHERE invitee = ?
         `;
         const [rows] = await db.query(query, [id]);
@@ -15,7 +15,7 @@ export const getAllInvitesQuery = async (id: number) => {
     }
 }
 
-export const sendInviteToQuery = async (inviter: string, invitee: string, groupId: string, res: Response) => {
+export const sendInviteToQuery = async (inviter: string, invitee: string, groupId: string) => {
     const status = 'PENDING';
     const id = uuidv4();
 
@@ -33,6 +33,7 @@ export const sendInviteToQuery = async (inviter: string, invitee: string, groupI
         const query = `
             INSERT INTO groupinvites (id, inviter, invitee, groupId, status)
             VALUES (?, ?, ?, ?, ?)
+            
         `;
         const [result] = await db.query(query, [id, inviter, invitee, groupId, status]);
         return result;
@@ -42,20 +43,39 @@ export const sendInviteToQuery = async (inviter: string, invitee: string, groupI
     }
 };
 
-export const acceptInviteQuery = async (inviteId: number) => {
+
+
+export const acceptInviteQuery = async (inviteId: string) => {
     try {
-        const query = `
-            UPDATE invites
-            SET status = 'ACCEPTED'
-            WHERE id = ?
+
+        await db.query('START TRANSACTION');
+
+
+        const updateQuery = `
+            UPDATE groupinvites 
+            SET Status = 'ACCEPTED' 
+            WHERE ID = ?;
         `;
-        const [result] = await db.query(query, [inviteId]);
-        return result;
+        await db.query(updateQuery, [inviteId]);
+
+
+        const callProcedureQuery = `
+            CALL CleanupInvitation(?);
+        `;
+        await db.query(callProcedureQuery, [inviteId]);
+
+
+        await db.query('COMMIT');
+
+        console.log('Invitation accepted and cleanup completed.');
     } catch (error) {
+
+        await db.query('ROLLBACK');
         console.error('Error accepting invite:', error);
         throw error;
     }
 }
+
 
 export const declineInviteQuery = async (inviteId: number) => {
     try {

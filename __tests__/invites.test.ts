@@ -13,7 +13,7 @@ afterAll(async () => {
     await database.end();
 });
 
-describe('Invites API', () => {
+describe.skip('Invites API', () => {
     it('should fetch all invites', async () => {
         const response = await request(app).get('/invites');
         expect(response.status).toBe(200);

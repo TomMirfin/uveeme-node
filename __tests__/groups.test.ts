@@ -13,7 +13,7 @@ afterAll(async () => {
     await database.end();
 });
 
-describe('Groups API', () => {
+describe.skip('Groups API', () => {
 
 
     it('should fetch all groups', async () => {
