@@ -29,27 +29,67 @@ export const getEventsForGroupQuery = async (groupId: number) => {
     }
 }
 
+
+
 export const createEventQuery = async (
     name: string,
     description: string,
-    groupId: number,
-    date: Date,
+    groupId: string,
     location: string,
     startDate: Date,
     endDate: Date,
     attendees: string[],
-    scoreByMember: { [key: string]: number },   // JSON object for scores
+    scoreByMember: { memberId: string, score: number }[],
 ) => {
     const id = uuidv4();
+
+    // Format dates to YYYY-MM-DD
+    const formattedStartDate = startDate.toISOString().split('T')[0];
+    const formattedEndDate = endDate.toISOString().split('T')[0];
+
     const query = `
         INSERT INTO events (id, name, description, fromGroup, startDate, endDate, location, attendees, scoreByMember)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
-    const values = [id, name, description, groupId, startDate, endDate, location, attendees, scoreByMember];
+    const values = [
+        id,
+        name,
+        description,
+        groupId,
+        formattedStartDate,
+        formattedEndDate,
+        location,
+        JSON.stringify(attendees),
+        JSON.stringify(scoreByMember)
+    ];
 
     try {
-        const [result] = await db.query(query, values);
-        return result;
+        // Insert the event
+        await db.query(query, values);
+
+        // Insert default scores into scorebyevent table
+        for (const { memberId, score } of scoreByMember) {
+            await db.query(`
+                INSERT INTO scorebyevent (eventId, memberId, score)
+                VALUES (?, ?, ?)
+                ON DUPLICATE KEY UPDATE score = VALUES(score);
+            `, [id, memberId, score]);
+        }
+
+        // Update the scoreByMember field in the events table
+        await db.query(`
+            UPDATE events
+            SET scoreByMember = (
+                SELECT JSON_ARRAYAGG(
+                    JSON_OBJECT('memberId', memberId, 'score', score)
+                )
+                FROM scorebyevent
+                WHERE eventId = ?
+            )
+            WHERE id = ?;
+        `, [id, id]);
+
+        return { id };
     } catch (error) {
         console.error('Error creating event:', error);
         throw error;

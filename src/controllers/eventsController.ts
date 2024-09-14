@@ -19,7 +19,6 @@ export const createEvent = async (req: any, res: any, next: any) => {
             name,
             description,
             groupId,
-            date,
             location,
             attendees = [],
             scoreByMember = {},
@@ -35,16 +34,14 @@ export const createEvent = async (req: any, res: any, next: any) => {
             name,
             description,
             groupId,
-            date,
             location,
             attendees,
             scoreByMember,
             startDate,
             endDate
-
         );
 
-        res.status(201).send(rows);
+        res.status(201).json(rows);
     } catch (error) {
         console.error('Error creating event:', error);
         res.status(500).send({ error: 'Internal Server Error' });

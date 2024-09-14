@@ -4,6 +4,8 @@ import groupsRoutes from './routes/groups';
 import db from './database';
 import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
+import eventsRoutes from './routes/events';
+import scoresRouter from './routes/scores';
 dotenv.config();
 
 const app = express();
@@ -18,6 +20,8 @@ app.use(express.urlencoded({ extended: true }));
 // Route handlers
 app.use('/users', usersRoutes);
 app.use('/groups', groupsRoutes);
+app.use('/events', eventsRoutes);
+app.use('/scores', scoresRouter);
 
 // Error handling middleware
 app.use((err: any, req: any, res: any, next: any) => {
