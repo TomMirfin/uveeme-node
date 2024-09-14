@@ -30,11 +30,11 @@ app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).send('Something broke!');
 });
-database_1.default.query('SELECT * FROM users').then(([rows]) => { console.log(rows); });
+// db.query('SELECT * FROM users').then(([rows]) => { console.log(rows) });
 // Start the server
-// app.listen(PORT, () => {
-//     console.log(`Server is running on port ${PORT}`);
-// });
+app.listen(Number(PORT), '0.0.0.0', () => {
+    console.log(`Server is running on port ${PORT}`);
+});
 // Properly close the database connection when needed
 process.on('SIGINT', () => {
     database_1.default.end().then(() => {
