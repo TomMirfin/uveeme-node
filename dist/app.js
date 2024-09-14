@@ -30,7 +30,8 @@ app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).send('Something broke!');
 });
-// db.query('SELECT * FROM users').then(([rows]) => { console.log(rows) });
+database_1.default.query('SELECT * FROM users').then(([rows]) => { console.log(rows); });
+database_1.default.query('SELECT * FROM `groups`').then(([rows]) => { console.log(rows); });
 // Start the server
 // app.listen(Number(PORT), '0.0.0.0', () => {
 //     console.log(`Server is running on port ${PORT}`);
