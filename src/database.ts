@@ -9,4 +9,7 @@ const pool = mySql.createPool({
     password: process.env.mysqlPassword,
 })
 
+
+
+
 export default pool;

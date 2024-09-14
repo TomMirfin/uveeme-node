@@ -29,6 +29,8 @@ app.use((err: any, req: any, res: any, next: any) => {
     res.status(500).send('Something broke!');
 });
 
+
+db.query('SELECT * FROM users').then(([rows]) => { console.log(rows) });
 // Start the server
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
@@ -44,5 +46,7 @@ process.on('SIGINT', () => {
         process.exit(1);
     });
 });
+
+
 
 export default app;
