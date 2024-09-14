@@ -3,10 +3,10 @@ import mySql from 'mysql2/promise';
 import dotenv from 'dotenv';
 dotenv.config();
 const pool = mySql.createPool({
-    database: process.env.mysqlDB,
-    host: process.env.mysqlHost,
-    user: process.env.mysqlUser,
-    password: process.env.mysqlPassword,
+    database: 'uveeme',
+    host: 'uveeme-db.chu6s8eo478x.eu-west-1.rds.amazonaws.com',
+    user: 'admin',
+    password: 'CM7CmTWDwSWPMonWs89n',
 })
 
 

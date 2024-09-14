@@ -37,13 +37,13 @@ database_1.default.query('SELECT * FROM `groups`').then(([rows]) => { console.lo
 //     console.log(`Server is running on port ${PORT}`);
 // });
 // Properly close the database connection when needed
-process.on('SIGINT', () => {
-    database_1.default.end().then(() => {
-        console.log('Database connection closed.');
-        process.exit(0);
-    }).catch(err => {
-        console.error('Error closing the database connection:', err);
-        process.exit(1);
-    });
-});
+// process.on('SIGINT', () => {
+//     db.end().then(() => {
+//         console.log('Database connection closed.');
+//         process.exit(0);
+//     }).catch(err => {
+//         console.error('Error closing the database connection:', err);
+//         process.exit(1);
+//     });
+// });
 exports.default = app;
