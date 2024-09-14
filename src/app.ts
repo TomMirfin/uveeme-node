@@ -6,13 +6,17 @@ import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
 import eventsRoutes from './routes/events';
 import scoresRouter from './routes/scores';
+import { Request } from "express";
+import cors from "cors";
+
+
 dotenv.config();
 
 const app = express();
 const PORT = process.env.SERVER_PORT || 3000;
 
 app.use(bodyParser.json())
-
+app.use(cors());
 // Middleware to parse JSON and URL-encoded bodies
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
