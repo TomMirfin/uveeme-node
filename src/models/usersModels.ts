@@ -35,8 +35,7 @@ export const getUserByEmailQuery = async (email: string) => {
         console.error(`Error fetching user with email ${email}:`, error);
         throw error;
     }
-
-}
+};
 
 export const createUserQuery = async (
     id: string,

@@ -83,22 +83,19 @@ export const loginUser = async (req: any, res: any) => {
     }
 
     try {
-
-        const user: any = await getUserByEmailQuery(email);
+        const rows: any = await getUserByEmailQuery(email);
+        const user = rows[0];
 
         if (!user) {
             return res.status(401).send({ error: 'Invalid credentials.' });
         }
-
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(401).send({ error: 'Invalid credentials.' });
         }
 
-
         const token = jwt.sign({ id: user.id, email: user.email }, 'your_jwt_secret', { expiresIn: '1h' });
-
 
         res.status(200).send({ token });
     } catch (error) {

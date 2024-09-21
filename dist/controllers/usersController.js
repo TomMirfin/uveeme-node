@@ -60,7 +60,8 @@ const loginUser = async (req, res) => {
         return res.status(400).send({ error: 'Email and password are required.' });
     }
     try {
-        const user = await (0, usersModels_1.getUserByEmailQuery)(email);
+        const rows = await (0, usersModels_1.getUserByEmailQuery)(email);
+        const user = rows[0];
         if (!user) {
             return res.status(401).send({ error: 'Invalid credentials.' });
         }
