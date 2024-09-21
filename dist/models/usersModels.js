@@ -43,16 +43,11 @@ const createUserQuery = async (name, email, profilePictureUrl, dob, phoneNumber,
     }
 };
 exports.createUserQuery = createUserQuery;
-// Update an existing user
-const alterUserQuery = async (id, // id should be the first argument since it's required
-fieldsToUpdate) => {
-    // Ensure the 'updatedOn' field is always updated when making any change
+const alterUserQuery = async (id, fieldsToUpdate) => {
     const updatedOn = new Date().toISOString().split('T')[0];
     try {
-        // Prepare an array to hold SQL set clauses and values
         let setClauses = [];
         let values = [];
-        // Dynamically build the query based on the provided fields
         if (fieldsToUpdate.name) {
             setClauses.push('name = ?');
             values.push(fieldsToUpdate.name);
@@ -92,15 +87,12 @@ fieldsToUpdate) => {
         if (setClauses.length === 0) {
             throw new Error('No fields provided to update.');
         }
-        // Add the user ID to the query parameters (for the WHERE clause)
         values.push(id);
-        // Build the final SQL query
         const query = `
             UPDATE users
             SET ${setClauses.join(', ')}
             WHERE id = ?
         `;
-        // Execute the query with the dynamic values
         const [result] = await database_1.default.query(query, values);
         return result;
     }
@@ -110,12 +102,9 @@ fieldsToUpdate) => {
     }
 };
 exports.alterUserQuery = alterUserQuery;
-// Delete a user
 const deleteUserQuery = async (userId) => {
     try {
-        // First, delete all related group invites that reference the user
         await database_1.default.query('DELETE FROM groupinvites WHERE invitedBy = ?', [userId]);
-        // Now delete the user from the users table
         const [result] = await database_1.default.query('DELETE FROM users WHERE id = ?', [userId]);
         return result;
     }
