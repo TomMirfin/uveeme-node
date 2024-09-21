@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteUserQuery = exports.alterUserQuery = exports.createUserQuery = exports.getUserByIdQuery = exports.getAllUsersQuery = void 0;
+exports.deleteUserQuery = exports.alterUserQuery = exports.createUserQuery = exports.getUserByEmailQuery = exports.getUserByIdQuery = exports.getAllUsersQuery = void 0;
 const database_1 = __importDefault(require("../database"));
 const getAllUsersQuery = async () => {
     try {
@@ -29,7 +29,17 @@ const getUserByIdQuery = async (id) => {
     }
 };
 exports.getUserByIdQuery = getUserByIdQuery;
-// Create a new user
+const getUserByEmailQuery = async (email) => {
+    try {
+        const [rows, fields] = await database_1.default.query('SELECT * FROM users WHERE email = ?', [email]);
+        return rows;
+    }
+    catch (error) {
+        console.error(`Error fetching user with email ${email}:`, error);
+        throw error;
+    }
+};
+exports.getUserByEmailQuery = getUserByEmailQuery;
 const createUserQuery = async (id, hashedPassword, name, email, profilePictureUrl, dob, phoneNumber, updatedOn, associatedGroupNames, associatedGroupsId) => {
     try {
         const [result] = await database_1.default.query('INSERT INTO users (id, password, name, email, profilePictureUrl, dob, phoneNumber, updatedOn, associatedGroupNames, associatedGroupsId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', [id, name, hashedPassword, email, profilePictureUrl, dob, phoneNumber, updatedOn, JSON.stringify(associatedGroupNames), JSON.stringify(associatedGroupsId)]);

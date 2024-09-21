@@ -1,6 +1,9 @@
 import db from '../database';
 import { v4 as uuidv4 } from 'uuid';
-
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
+import { Request } from 'express';
+import Response from 'express';
 export const getAllUsersQuery = async () => {
     try {
         const [rows, fields] = await db.query('SELECT * FROM users');
@@ -23,7 +26,17 @@ export const getUserByIdQuery = async (id: number) => {
     }
 }
 
-// Create a new user
+
+export const getUserByEmailQuery = async (email: string) => {
+    try {
+        const [rows, fields] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+        return rows;
+    } catch (error) {
+        console.error(`Error fetching user with email ${email}:`, error);
+        throw error;
+    }
+
+}
 
 export const createUserQuery = async (
     id: string,

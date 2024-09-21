@@ -3,8 +3,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteUser = exports.alterUser = exports.createUser = exports.getUserById = exports.getUsers = void 0;
+exports.loginUser = exports.deleteUser = exports.alterUser = exports.createUser = exports.getUserById = exports.getUsers = void 0;
 const usersModels_1 = require("../models/usersModels");
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const uuid_1 = require("uuid");
 const getUsers = async (req, res, next) => {
@@ -53,3 +54,26 @@ const deleteUser = (req, res, next) => {
     (0, usersModels_1.deleteUserQuery)(id).then((rows) => { res.status(204).send(rows); });
 };
 exports.deleteUser = deleteUser;
+const loginUser = async (req, res) => {
+    const { email, password } = req.body;
+    if (!email || !password) {
+        return res.status(400).send({ error: 'Email and password are required.' });
+    }
+    try {
+        const user = await (0, usersModels_1.getUserByEmailQuery)(email);
+        if (!user) {
+            return res.status(401).send({ error: 'Invalid credentials.' });
+        }
+        const isMatch = await bcrypt_1.default.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).send({ error: 'Invalid credentials.' });
+        }
+        const token = jsonwebtoken_1.default.sign({ id: user.id, email: user.email }, 'your_jwt_secret', { expiresIn: '1h' });
+        res.status(200).send({ token });
+    }
+    catch (error) {
+        console.error('Error logging in:', error);
+        res.status(500).send({ error: 'Internal Server Error' });
+    }
+};
+exports.loginUser = loginUser;

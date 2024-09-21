@@ -1,5 +1,6 @@
 
-import { alterUserQuery, createUserQuery, deleteUserQuery, getAllUsersQuery, getUserByIdQuery } from "../models/usersModels";
+import { alterUserQuery, createUserQuery, deleteUserQuery, getAllUsersQuery, getUserByEmailQuery, getUserByIdQuery } from "../models/usersModels";
+import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 export const getUsers = async (req: any, res: any, next: any) => {
@@ -74,3 +75,34 @@ export const deleteUser = (req: any, res: any, next: any) => {
     deleteUserQuery(id).then((rows: any) => { res.status(204).send(rows) });
 }
 
+export const loginUser = async (req: any, res: any) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).send({ error: 'Email and password are required.' });
+    }
+
+    try {
+
+        const user: any = await getUserByEmailQuery(email);
+
+        if (!user) {
+            return res.status(401).send({ error: 'Invalid credentials.' });
+        }
+
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).send({ error: 'Invalid credentials.' });
+        }
+
+
+        const token = jwt.sign({ id: user.id, email: user.email }, 'your_jwt_secret', { expiresIn: '1h' });
+
+
+        res.status(200).send({ token });
+    } catch (error) {
+        console.error('Error logging in:', error);
+        res.status(500).send({ error: 'Internal Server Error' });
+    }
+};
