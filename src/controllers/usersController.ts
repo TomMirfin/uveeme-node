@@ -1,7 +1,7 @@
 
 import { alterUserQuery, createUserQuery, deleteUserQuery, getAllUsersQuery, getUserByIdQuery } from "../models/usersModels";
-
-
+import bcrypt from 'bcrypt';
+import { v4 as uuidv4 } from 'uuid';
 export const getUsers = async (req: any, res: any, next: any) => {
     console.log('getUsers');
     const rows = await getAllUsersQuery();
@@ -15,11 +15,41 @@ export const getUserById = (req: any, res: any, next: any) => {
 
 }
 
-export const createUser = (req: any, res: any, next: any) => {
-    const { name, email, profilePictureUrl, dob, phoneNumber, updatedOn, associatedGroupNames, associatedGroupId } = req.body;
-    createUserQuery(name, email, profilePictureUrl, dob, phoneNumber, updatedOn, associatedGroupNames, associatedGroupId).then((rows: any) => { res.status(201).send(rows) });
 
-}
+
+export const createUser = async (req: any, res: any, next: any) => {
+    const { name, email, profilePictureUrl, dob, phoneNumber, updatedOn, associatedGroupNames, associatedGroupId, password } = req.body;
+
+
+    if (!name || !email || !password) {
+        return res.status(400).send({ error: 'Name, email, and password are required.' });
+    }
+    const id = uuidv4();
+    try {
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const rows = await createUserQuery(
+            id,
+            name,
+            email,
+            hashedPassword,
+            profilePictureUrl,
+            dob,
+            phoneNumber,
+            updatedOn,
+            associatedGroupNames,
+            associatedGroupId
+        );
+
+
+        res.status(201).send({ id: id, name, email, profilePictureUrl });
+    } catch (error) {
+        console.error('Error creating user:', error);
+        res.status(500).send({ error: 'Internal Server Error' });
+    }
+};
+
 
 export const alterUser = async (req: any, res: any, next: any) => {
     const { id } = req.params;

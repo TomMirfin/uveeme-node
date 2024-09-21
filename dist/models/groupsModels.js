@@ -61,7 +61,7 @@ lastEvent = null, nextEvent = null, groupImage = '', totalScore = 0, admin = [])
                 id, name, description, membersNames, memberTypes, membersIds,
                 scoreByMember, lastEvent, nextEvent, groupImage, totalScore, admin
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
         const values = [
             id,
@@ -78,7 +78,7 @@ lastEvent = null, nextEvent = null, groupImage = '', totalScore = 0, admin = [])
             JSON.stringify(admin)
         ];
         const [result] = await database_1.default.query(query, values);
-        return result;
+        return { id, result };
     }
     catch (error) {
         console.error('Error creating group:', error);

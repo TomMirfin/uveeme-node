@@ -18,7 +18,7 @@ export const getGroupsContainingUser = (req: any, res: any, next: any) => {
 
 }
 
-
+// here I need to add the first user as admin
 export const createGroup = async (req: any, res: any, next: any) => {
     console.log('Request Body:', req.body);
 
@@ -37,11 +37,13 @@ export const createGroup = async (req: any, res: any, next: any) => {
             admin = []
         } = req.body;
 
+
         if (!name || !description) {
             return res.status(400).send({ error: 'Name and description are required' });
         }
 
-        const rows = await createGroupQuery(
+
+        const { id, result } = await createGroupQuery(
             name,
             description,
             membersNames,
@@ -55,12 +57,15 @@ export const createGroup = async (req: any, res: any, next: any) => {
             admin
         );
 
-        res.status(201).send(rows);
+
+        res.status(201).json({ success: true, groupId: id });
+
     } catch (error) {
         console.error('Error creating group:', error);
         res.status(500).send({ error: 'Internal Server Error' });
     }
 };
+
 
 
 export const alterGroup = (req: any, res: any, next: any) => {

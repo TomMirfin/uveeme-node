@@ -70,7 +70,7 @@ export const createGroupQuery = async (
                 id, name, description, membersNames, memberTypes, membersIds,
                 scoreByMember, lastEvent, nextEvent, groupImage, totalScore, admin
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
         const values = [
             id,
@@ -87,12 +87,16 @@ export const createGroupQuery = async (
             JSON.stringify(admin)
         ];
         const [result] = await db.query(query, values);
-        return result;
+
+
+        return { id, result };
+
     } catch (error) {
         console.error('Error creating group:', error);
         throw error;
     }
 };
+
 
 
 

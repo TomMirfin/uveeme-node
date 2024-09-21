@@ -5,7 +5,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteUserQuery = exports.alterUserQuery = exports.createUserQuery = exports.getUserByIdQuery = exports.getAllUsersQuery = void 0;
 const database_1 = __importDefault(require("../database"));
-const uuid_1 = require("uuid");
 const getAllUsersQuery = async () => {
     try {
         const [rows, fields] = await database_1.default.query('SELECT * FROM users');
@@ -31,10 +30,9 @@ const getUserByIdQuery = async (id) => {
 };
 exports.getUserByIdQuery = getUserByIdQuery;
 // Create a new user
-const createUserQuery = async (name, email, profilePictureUrl, dob, phoneNumber, updatedOn, associatedGroupNames, associatedGroupsId) => {
-    const id = (0, uuid_1.v4)();
+const createUserQuery = async (id, hashedPassword, name, email, profilePictureUrl, dob, phoneNumber, updatedOn, associatedGroupNames, associatedGroupsId) => {
     try {
-        const [result] = await database_1.default.query('INSERT INTO users (id, name, email, profilePictureUrl, dob, phoneNumber, updatedOn, associatedGroupNames, associatedGroupsId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', [id, name, email, profilePictureUrl, dob, phoneNumber, updatedOn, JSON.stringify(associatedGroupNames), JSON.stringify(associatedGroupsId)]);
+        const [result] = await database_1.default.query('INSERT INTO users (id, password, name, email, profilePictureUrl, dob, phoneNumber, updatedOn, associatedGroupNames, associatedGroupsId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', [id, name, hashedPassword, email, profilePictureUrl, dob, phoneNumber, updatedOn, JSON.stringify(associatedGroupNames), JSON.stringify(associatedGroupsId)]);
         return result;
     }
     catch (error) {

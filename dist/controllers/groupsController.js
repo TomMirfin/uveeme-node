@@ -19,6 +19,7 @@ const getGroupsContainingUser = (req, res, next) => {
     (0, groupsModels_1.getAllGroupsWithUserQuery)(id).then((rows) => { res.status(200).send(rows); });
 };
 exports.getGroupsContainingUser = getGroupsContainingUser;
+// here I need to add the first user as admin
 const createGroup = async (req, res, next) => {
     console.log('Request Body:', req.body);
     try {
@@ -26,8 +27,8 @@ const createGroup = async (req, res, next) => {
         if (!name || !description) {
             return res.status(400).send({ error: 'Name and description are required' });
         }
-        const rows = await (0, groupsModels_1.createGroupQuery)(name, description, membersNames, memberTypes, membersIds, scoreByMember, lastEvent, nextEvent, groupImage, totalScore, admin);
-        res.status(201).send(rows);
+        const { id, result } = await (0, groupsModels_1.createGroupQuery)(name, description, membersNames, memberTypes, membersIds, scoreByMember, lastEvent, nextEvent, groupImage, totalScore, admin);
+        res.status(201).json({ success: true, groupId: id });
     }
     catch (error) {
         console.error('Error creating group:', error);

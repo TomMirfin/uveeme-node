@@ -26,6 +26,8 @@ export const getUserByIdQuery = async (id: number) => {
 // Create a new user
 
 export const createUserQuery = async (
+    id: string,
+    hashedPassword: string,
     name: string,
     email: string,
     profilePictureUrl: string,
@@ -35,11 +37,11 @@ export const createUserQuery = async (
     associatedGroupNames: string[],
     associatedGroupsId: number[]
 ) => {
-    const id = uuidv4();
+
     try {
         const [result] = await db.query(
-            'INSERT INTO users (id, name, email, profilePictureUrl, dob, phoneNumber, updatedOn, associatedGroupNames, associatedGroupsId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [id, name, email, profilePictureUrl, dob, phoneNumber, updatedOn, JSON.stringify(associatedGroupNames), JSON.stringify(associatedGroupsId)]
+            'INSERT INTO users (id, password, name, email, profilePictureUrl, dob, phoneNumber, updatedOn, associatedGroupNames, associatedGroupsId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [id, name, hashedPassword, email, profilePictureUrl, dob, phoneNumber, updatedOn, JSON.stringify(associatedGroupNames), JSON.stringify(associatedGroupsId)]
         );
         return result;
     } catch (error) {

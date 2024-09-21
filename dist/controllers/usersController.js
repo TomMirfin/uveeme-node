@@ -1,7 +1,12 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteUser = exports.alterUser = exports.createUser = exports.getUserById = exports.getUsers = void 0;
 const usersModels_1 = require("../models/usersModels");
+const bcrypt_1 = __importDefault(require("bcrypt"));
+const uuid_1 = require("uuid");
 const getUsers = async (req, res, next) => {
     console.log('getUsers');
     const rows = await (0, usersModels_1.getAllUsersQuery)();
@@ -14,9 +19,21 @@ const getUserById = (req, res, next) => {
     (0, usersModels_1.getUserByIdQuery)(id).then((rows) => { res.status(200).send(rows); });
 };
 exports.getUserById = getUserById;
-const createUser = (req, res, next) => {
-    const { name, email, profilePictureUrl, dob, phoneNumber, updatedOn, associatedGroupNames, associatedGroupId } = req.body;
-    (0, usersModels_1.createUserQuery)(name, email, profilePictureUrl, dob, phoneNumber, updatedOn, associatedGroupNames, associatedGroupId).then((rows) => { res.status(201).send(rows); });
+const createUser = async (req, res, next) => {
+    const { name, email, profilePictureUrl, dob, phoneNumber, updatedOn, associatedGroupNames, associatedGroupId, password } = req.body;
+    if (!name || !email || !password) {
+        return res.status(400).send({ error: 'Name, email, and password are required.' });
+    }
+    const id = (0, uuid_1.v4)();
+    try {
+        const hashedPassword = await bcrypt_1.default.hash(password, 10);
+        const rows = await (0, usersModels_1.createUserQuery)(id, name, email, hashedPassword, profilePictureUrl, dob, phoneNumber, updatedOn, associatedGroupNames, associatedGroupId);
+        res.status(201).send({ id: id, name, email, profilePictureUrl });
+    }
+    catch (error) {
+        console.error('Error creating user:', error);
+        res.status(500).send({ error: 'Internal Server Error' });
+    }
 };
 exports.createUser = createUser;
 const alterUser = async (req, res, next) => {
