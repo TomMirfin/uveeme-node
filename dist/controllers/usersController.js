@@ -19,11 +19,16 @@ const createUser = (req, res, next) => {
     (0, usersModels_1.createUserQuery)(name, email, profilePictureUrl, dob, phoneNumber, updatedOn, associatedGroupNames, associatedGroupId).then((rows) => { res.status(201).send(rows); });
 };
 exports.createUser = createUser;
-const alterUser = (req, res, next) => {
+const alterUser = async (req, res, next) => {
     const { id } = req.params;
-    const { name, email, profilePictureUrl, dob, createdOn, phoneNumber, associatedGroupNames, associatedGroupId } = req.body;
-    //update user
-    (0, usersModels_1.alterUserQuery)(id, name, email, profilePictureUrl, dob, createdOn, phoneNumber, associatedGroupNames, associatedGroupId).then((rows) => { res.status(200).send(rows); });
+    const fieldsToUpdate = req.body;
+    try {
+        const result = await (0, usersModels_1.alterUserQuery)(id, fieldsToUpdate);
+        res.status(200).json({ message: 'User updated successfully', result });
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Error updating user', error });
+    }
 };
 exports.alterUser = alterUser;
 const deleteUser = (req, res, next) => {

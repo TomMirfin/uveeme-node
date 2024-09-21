@@ -44,34 +44,63 @@ const createUserQuery = async (name, email, profilePictureUrl, dob, phoneNumber,
 };
 exports.createUserQuery = createUserQuery;
 // Update an existing user
-const alterUserQuery = async (name, email, profilePictureUrl, dob, createdOn, phoneNumber, id, associatedGroupNames, associatedGroupId) => {
+const alterUserQuery = async (id, // id should be the first argument since it's required
+fieldsToUpdate) => {
+    // Ensure the 'updatedOn' field is always updated when making any change
     const updatedOn = new Date().toISOString().split('T')[0];
     try {
+        // Prepare an array to hold SQL set clauses and values
+        let setClauses = [];
+        let values = [];
+        // Dynamically build the query based on the provided fields
+        if (fieldsToUpdate.name) {
+            setClauses.push('name = ?');
+            values.push(fieldsToUpdate.name);
+        }
+        if (fieldsToUpdate.email) {
+            setClauses.push('email = ?');
+            values.push(fieldsToUpdate.email);
+        }
+        if (fieldsToUpdate.profilePictureUrl) {
+            setClauses.push('profilePictureUrl = ?');
+            values.push(fieldsToUpdate.profilePictureUrl);
+        }
+        if (fieldsToUpdate.dob) {
+            setClauses.push('dob = ?');
+            values.push(fieldsToUpdate.dob);
+        }
+        if (fieldsToUpdate.createdOn) {
+            setClauses.push('createdOn = ?');
+            values.push(fieldsToUpdate.createdOn);
+        }
+        if (fieldsToUpdate.phoneNumber) {
+            setClauses.push('phoneNumber = ?');
+            values.push(fieldsToUpdate.phoneNumber);
+        }
+        if (fieldsToUpdate.associatedGroupNames) {
+            setClauses.push('associatedGroupNames = ?');
+            values.push(JSON.stringify(fieldsToUpdate.associatedGroupNames));
+        }
+        if (fieldsToUpdate.associatedGroupId) {
+            setClauses.push('associatedGroupsId = ?');
+            values.push(JSON.stringify(fieldsToUpdate.associatedGroupId));
+        }
+        // Always update the 'updatedOn' field
+        setClauses.push('updatedOn = ?');
+        values.push(updatedOn);
+        // Ensure we have fields to update
+        if (setClauses.length === 0) {
+            throw new Error('No fields provided to update.');
+        }
+        // Add the user ID to the query parameters (for the WHERE clause)
+        values.push(id);
+        // Build the final SQL query
         const query = `
             UPDATE users
-            SET name = ?,
-                email = ?,
-                profilePictureUrl = ?,
-                dob = ?,
-                createdOn = ?,
-                phoneNumber = ?,
-                updatedOn = ?,
-                associatedGroupNames = ?,
-                associatedGroupsId = ?
+            SET ${setClauses.join(', ')}
             WHERE id = ?
         `;
-        const values = [
-            id,
-            name,
-            email,
-            profilePictureUrl,
-            dob,
-            createdOn,
-            phoneNumber,
-            updatedOn,
-            JSON.stringify(associatedGroupNames),
-            JSON.stringify(associatedGroupId),
-        ];
+        // Execute the query with the dynamic values
         const [result] = await database_1.default.query(query, values);
         return result;
     }
