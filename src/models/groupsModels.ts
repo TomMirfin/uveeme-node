@@ -60,7 +60,7 @@ export const createGroupQuery = async (
     nextEvent: Date | null = null,
     groupImage: string = '',
     totalScore: number = 0,
-    admin: string[]
+    admin: string[] = []
 
 ) => {
     const id = uuidv4();

@@ -53,7 +53,7 @@ const getGroupByIdQuery = async (id) => {
 };
 exports.getGroupByIdQuery = getGroupByIdQuery;
 const createGroupQuery = async (name, description = '', membersNames = [], memberTypes = [], membersIds = [], scoreByMember = {}, // JSON object for scores
-lastEvent = null, nextEvent = null, groupImage = '', totalScore = 0, admin) => {
+lastEvent = null, nextEvent = null, groupImage = '', totalScore = 0, admin = []) => {
     const id = (0, uuid_1.v4)();
     try {
         const query = `
