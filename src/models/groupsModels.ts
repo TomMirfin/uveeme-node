@@ -84,7 +84,6 @@ export const createGroupQuery = async (
             nextEvent ? nextEvent : '1970-01-01',
             groupImage,
             totalScore,
-            JSON.stringify(admin)
         ];
         const [result] = await db.query(query, values);
         return result;
