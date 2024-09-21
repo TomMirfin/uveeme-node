@@ -59,9 +59,9 @@ lastEvent = null, nextEvent = null, groupImage = '', totalScore = 0, admin = [])
         const query = `
             INSERT INTO \`groups\` (
                 id, name, description, membersNames, memberTypes, membersIds,
-                scoreByMember, lastEvent, nextEvent, groupImage, totalScore, admin
+                scoreByMember, lastEvent, nextEvent, groupImage, totalScore
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
         const values = [
             id,
