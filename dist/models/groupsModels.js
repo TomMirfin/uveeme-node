@@ -59,9 +59,9 @@ lastEvent = null, nextEvent = null, groupImage = '', totalScore = 0, admin = [])
         const query = `
             INSERT INTO \`groups\` (
                 id, name, description, membersNames, memberTypes, membersIds,
-                scoreByMember, lastEvent, nextEvent, groupImage, totalScore
+                scoreByMember, lastEvent, nextEvent, groupImage, totalScore, admin
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?)
         `;
         const values = [
             id,
@@ -75,6 +75,7 @@ lastEvent = null, nextEvent = null, groupImage = '', totalScore = 0, admin = [])
             nextEvent ? nextEvent : '1970-01-01',
             groupImage,
             totalScore,
+            JSON.stringify(admin)
         ];
         const [result] = await database_1.default.query(query, values);
         return result;

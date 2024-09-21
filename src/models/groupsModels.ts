@@ -68,9 +68,9 @@ export const createGroupQuery = async (
         const query = `
             INSERT INTO \`groups\` (
                 id, name, description, membersNames, memberTypes, membersIds,
-                scoreByMember, lastEvent, nextEvent, groupImage, totalScore
+                scoreByMember, lastEvent, nextEvent, groupImage, totalScore, admin
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?)
         `;
         const values = [
             id,
@@ -84,6 +84,7 @@ export const createGroupQuery = async (
             nextEvent ? nextEvent : '1970-01-01',
             groupImage,
             totalScore,
+            JSON.stringify(admin)
         ];
         const [result] = await db.query(query, values);
         return result;
