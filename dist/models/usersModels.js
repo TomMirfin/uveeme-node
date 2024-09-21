@@ -111,13 +111,16 @@ fieldsToUpdate) => {
 };
 exports.alterUserQuery = alterUserQuery;
 // Delete a user
-const deleteUserQuery = async (id) => {
+const deleteUserQuery = async (userId) => {
     try {
-        const [result] = await database_1.default.query('DELETE FROM users WHERE id = ?', [id]);
+        // First, delete all related group invites that reference the user
+        await database_1.default.query('DELETE FROM groupinvites WHERE invitedBy = ?', [userId]);
+        // Now delete the user from the users table
+        const [result] = await database_1.default.query('DELETE FROM users WHERE id = ?', [userId]);
         return result;
     }
     catch (error) {
-        console.error(`Error deleting user with ID ${id}:`, error);
+        console.error(`Error deleting user with ID ${userId}:`, error);
         throw error;
     }
 };

@@ -134,12 +134,17 @@ export const alterUserQuery = async (
 
 
 // Delete a user
-export const deleteUserQuery = async (id: number) => {
+export const deleteUserQuery = async (userId: string) => {
     try {
-        const [result] = await db.query('DELETE FROM users WHERE id = ?', [id]);
+
+        await db.query('DELETE FROM groupinvites WHERE invitedBy = ?', [userId]);
+
+
+        const [result] = await db.query('DELETE FROM users WHERE id = ?', [userId]);
+
         return result;
     } catch (error) {
-        console.error(`Error deleting user with ID ${id}:`, error);
+        console.error(`Error deleting user with ID ${userId}:`, error);
         throw error;
     }
-}
+};
