@@ -47,9 +47,9 @@ export const createUserQuery = async (
         throw error;
     }
 }
-
+// Update an existing user
 export const alterUserQuery = async (
-    id: string,
+    id: string, // id should be the first argument since it's required
     fieldsToUpdate: {
         name?: string,
         email?: string,
@@ -61,15 +61,15 @@ export const alterUserQuery = async (
         associatedGroupId?: number[]
     }
 ) => {
-
+    // Ensure the 'updatedOn' field is always updated when making any change
     const updatedOn = new Date().toISOString().split('T')[0];
 
     try {
-
+        // Prepare an array to hold SQL set clauses and values
         let setClauses = [];
         let values = [];
 
-
+        // Dynamically build the query based on the provided fields
         if (fieldsToUpdate.name) {
             setClauses.push('name = ?');
             values.push(fieldsToUpdate.name);
@@ -112,17 +112,17 @@ export const alterUserQuery = async (
             throw new Error('No fields provided to update.');
         }
 
-
+        // Add the user ID to the query parameters (for the WHERE clause)
         values.push(id);
 
-
+        // Build the final SQL query
         const query = `
             UPDATE users
             SET ${setClauses.join(', ')}
             WHERE id = ?
         `;
 
-
+        // Execute the query with the dynamic values
         const [result] = await db.query(query, values);
         return result;
     } catch (error) {
@@ -133,11 +133,15 @@ export const alterUserQuery = async (
 
 
 
-
+// Delete a user
 export const deleteUserQuery = async (userId: string) => {
     try {
+
         await db.query('DELETE FROM groupinvites WHERE invitedBy = ?', [userId]);
+
+
         const [result] = await db.query('DELETE FROM users WHERE id = ?', [userId]);
+
         return result;
     } catch (error) {
         console.error(`Error deleting user with ID ${userId}:`, error);

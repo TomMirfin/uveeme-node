@@ -49,20 +49,19 @@ interface memberTypes {
     type: string
 }
 
-
-
 export const createGroupQuery = async (
     name: string,
     description: string = '',
     membersNames: string[] = [],
-    memberTypes: string[] = [],
+    memberTypes: memberTypes[] = [],
     membersIds: number[] = [],
-    scoreByMember: Record<string, number> = {},
+    scoreByMember: Record<string, number> = {},  // JSON object for scores
     lastEvent: Date | null = null,
     nextEvent: Date | null = null,
     groupImage: string = '',
     totalScore: number = 0,
-    admin: string[] = []
+    admin: string[]
+
 ) => {
     const id = uuidv4();
     try {
@@ -73,34 +72,27 @@ export const createGroupQuery = async (
             )
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
-
         const values = [
             id,
             name,
-            description,
+            description || '',
             JSON.stringify(membersNames),
             JSON.stringify(memberTypes),
             JSON.stringify(membersIds),
             JSON.stringify(scoreByMember),
-            lastEvent ? lastEvent.toISOString().split('T')[0] : null,
-            nextEvent ? nextEvent.toISOString().split('T')[0] : null,
+            lastEvent ? lastEvent : '1970-01-01',
+            nextEvent ? nextEvent : '1970-01-01',
             groupImage,
             totalScore,
             JSON.stringify(admin)
         ];
-
-        console.log('Executing query:', query);
-        console.log('With values:', values);
-
         const [result] = await db.query(query, values);
         return result;
-
-    } catch (error: any) {
-        console.error('Error creating group:', error.message);
+    } catch (error) {
+        console.error('Error creating group:', error);
         throw error;
     }
 };
-
 
 
 

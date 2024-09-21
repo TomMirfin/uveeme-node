@@ -52,7 +52,8 @@ const getGroupByIdQuery = async (id) => {
     }
 };
 exports.getGroupByIdQuery = getGroupByIdQuery;
-const createGroupQuery = async (name, description = '', membersNames = [], memberTypes = [], membersIds = [], scoreByMember = {}, lastEvent = null, nextEvent = null, groupImage = '', totalScore = 0, admin = []) => {
+const createGroupQuery = async (name, description = '', membersNames = [], memberTypes = [], membersIds = [], scoreByMember = {}, // JSON object for scores
+lastEvent = null, nextEvent = null, groupImage = '', totalScore = 0, admin) => {
     const id = (0, uuid_1.v4)();
     try {
         const query = `
@@ -65,24 +66,22 @@ const createGroupQuery = async (name, description = '', membersNames = [], membe
         const values = [
             id,
             name,
-            description,
+            description || '',
             JSON.stringify(membersNames),
             JSON.stringify(memberTypes),
             JSON.stringify(membersIds),
             JSON.stringify(scoreByMember),
-            lastEvent ? lastEvent.toISOString().split('T')[0] : null,
-            nextEvent ? nextEvent.toISOString().split('T')[0] : null,
+            lastEvent ? lastEvent : '1970-01-01',
+            nextEvent ? nextEvent : '1970-01-01',
             groupImage,
             totalScore,
             JSON.stringify(admin)
         ];
-        console.log('Executing query:', query);
-        console.log('With values:', values);
         const [result] = await database_1.default.query(query, values);
         return result;
     }
     catch (error) {
-        console.error('Error creating group:', error.message);
+        console.error('Error creating group:', error);
         throw error;
     }
 };
