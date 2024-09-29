@@ -30,7 +30,7 @@ app.use('/users', usersRoutes);
 app.use('/groups', groupsRoutes);
 app.use('/events', eventsRoutes);
 app.use('/scores', scoresRouter);
-app.post('/register', registerRouter)
+app.use('/register', registerRouter)
 
 // this is what we are working on
 
