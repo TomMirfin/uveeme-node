@@ -19,20 +19,17 @@ export const getUserById = (req: any, res: any, next: any) => {
 }
 
 
-
 export const createUser = async (req: any, res: any, next: any) => {
     const { name, email, profilePictureUrl, dob, phoneNumber, updatedOn, associatedGroupNames, associatedGroupId, password } = req.body;
-
-
-    if (!name || !email) {
+    const id = uuidv4();
+    if (!name || !email || !password) {
         return res.status(400).send({ error: 'Name, email, and password are required.' });
     }
-    const id = uuidv4();
-    try {
 
+    try {
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const rows = await createUserQuery(
+        const user = await createUserQuery(
             id,
             name,
             email,
@@ -45,16 +42,12 @@ export const createUser = async (req: any, res: any, next: any) => {
             associatedGroupId
         );
 
-
-        res.status(201).send({ id: id, name, email, profilePictureUrl });
-        ;
+        res.status(201).send(user);
     } catch (error) {
-
         console.error('Error creating user:', error);
         res.status(500).send({ error: 'Internal Server Error' });
     }
 };
-
 
 export const alterUser = async (req: any, res: any, next: any) => {
     const { id } = req.params;

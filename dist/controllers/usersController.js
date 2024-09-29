@@ -23,15 +23,14 @@ const getUserById = (req, res, next) => {
 exports.getUserById = getUserById;
 const createUser = async (req, res, next) => {
     const { name, email, profilePictureUrl, dob, phoneNumber, updatedOn, associatedGroupNames, associatedGroupId, password } = req.body;
-    if (!name || !email) {
+    const id = (0, uuid_1.v4)();
+    if (!name || !email || !password) {
         return res.status(400).send({ error: 'Name, email, and password are required.' });
     }
-    const id = (0, uuid_1.v4)();
     try {
         const hashedPassword = await bcrypt_1.default.hash(password, 10);
-        const rows = await (0, usersModels_1.createUserQuery)(id, name, email, hashedPassword, profilePictureUrl, dob, phoneNumber, updatedOn, associatedGroupNames, associatedGroupId);
-        res.status(201).send({ id: id, name, email, profilePictureUrl });
-        ;
+        const user = await (0, usersModels_1.createUserQuery)(id, name, email, hashedPassword, profilePictureUrl, dob, phoneNumber, updatedOn, associatedGroupNames, associatedGroupId);
+        res.status(201).send(user);
     }
     catch (error) {
         console.error('Error creating user:', error);
