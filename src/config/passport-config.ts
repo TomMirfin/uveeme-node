@@ -1,28 +1,46 @@
-// @ts-nocheck
-
-import LocalStrategy from 'passport-local';
-import { getUserByEmail } from '../controllers/usersController';
+// /config/passport.ts
+import passport from 'passport';
+import { Strategy as LocalStrategy } from 'passport-local';
 import bcrypt from 'bcrypt';
+import { getUserByEmailQuery, getUserByIdQuery } from '../models/usersModels';
 
-
-export function initializePassport(passport, getUserByEmail) {
-    const authicateUser = async (email, password, done) => {
-        const user = await getUserByEmail(email);
-        if (user == null) {
-            return done(null, false, { message: 'No user with that email' });
-        }
+export const passportConfig = () => {
+    // Define local strategy
+    passport.use(new LocalStrategy({
+        usernameField: 'email',
+        passwordField: 'password'
+    }, async (email, password, done) => {
         try {
-            if (await bcrypt.compare(password, user.password)) {
-                return done(null, user);
-            } else {
-                return done(null, false, { message: 'Password incorrect' });
+            const rows: any = await getUserByEmailQuery(email);
+            const user = rows[0];
+
+            if (!user) {
+                return done(null, false, { message: 'Invalid credentials.' });
             }
-        } catch (e) {
-            return done(e);
+
+            const isMatch = await bcrypt.compare(password, user.password);
+            if (!isMatch) {
+                return done(null, false, { message: 'Invalid credentials.' });
+            }
+
+            return done(null, user);
+        } catch (error) {
+            return done(error);
         }
-    }
-    passport.use(new LocalStrategy({ usernameField: 'email' }),
-        authicateUser)
-    passport.serializeUser((user, done) => { });
-    passport.deserializeUser((id, done) => { });
-}
+    }));
+
+    // Optional: If you're using sessions, this is how you serialize and deserialize
+    passport.serializeUser((user: any, done) => {
+        done(null, user.id);
+    });
+
+    passport.deserializeUser(async (id: string, done) => {
+        try {
+            const rows: any = await getUserByIdQuery(id);
+            const user = rows[0];
+            done(null, user);
+        } catch (error) {
+            done(error);
+        }
+    });
+};

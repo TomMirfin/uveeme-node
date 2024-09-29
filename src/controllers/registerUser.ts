@@ -2,22 +2,33 @@
 import { createUserQuery } from "../models/usersModels";
 import { v4 as uuid } from 'uuid';
 import bcrypt from 'bcrypt';
+
 export const registerUser = async (req: any, res: any) => {
-    const { email, password, name, profilePictureUrl, dob, phoneNumber, associatedGroupNames, associatedGroupId } = req.body;
+    const {
+        email,
+        password,
+        name,
+        profilePictureUrl = '',
+        dob,
+        phoneNumber = '',
+        associatedGroupNames = [],
+        associatedGroupId = []
+    } = req.body;
 
     if (!email || !password || !name || !dob) {
-        return res.status(400).send({ error: 'All fields are required.' });
+        return res.status(400).send({ error: 'Name, email, password, and date of birth are required.' });
     }
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
         const id = uuid();
         const updatedOn = new Date().toISOString();
-        const rows: any = await createUserQuery(
+
+        const result = await createUserQuery(
             id,
+            hashedPassword,
             name,
             email,
-            hashedPassword,
             profilePictureUrl,
             dob,
             phoneNumber,
@@ -25,9 +36,10 @@ export const registerUser = async (req: any, res: any) => {
             associatedGroupNames,
             associatedGroupId
         );
-        res.status(201).send(rows);
+
+        res.status(201).send(result);
     } catch (error) {
         console.error('Error registering user:', error);
         res.status(500).send({ error: 'Internal Server Error' });
     }
-}
+};

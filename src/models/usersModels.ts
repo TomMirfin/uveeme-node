@@ -1,10 +1,5 @@
 import db from '../database';
-import { v4 as uuidv4 } from 'uuid';
-import jwt from 'jsonwebtoken';
-import bcrypt from 'bcrypt';
-import { Request } from 'express';
-import Response from 'express';
-import { registerUser } from '../controllers/registerUser';
+
 export const getAllUsersQuery = async () => {
     try {
         const [rows, fields] = await db.query('SELECT * FROM users');
@@ -48,23 +43,35 @@ export const createUserQuery = async (
     phoneNumber: string,
     updatedOn: string,
     associatedGroupNames: string[],
-    associatedGroupsId: number[]
+    associatedGroupId: number[]
 ) => {
-
     try {
         const [result] = await db.query(
-            'INSERT INTO users (id, password, name, email, profilePictureUrl, dob, phoneNumber, updatedOn, associatedGroupNames, associatedGroupsId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [id, name, hashedPassword, email, profilePictureUrl, dob, phoneNumber, updatedOn, JSON.stringify(associatedGroupNames), JSON.stringify(associatedGroupsId)]
+            `INSERT INTO users (id, password, name, email, profilePictureUrl, dob, phoneNumber, updatedOn, associatedGroupNames, associatedGroupsId) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                id,
+                hashedPassword,
+                name,
+                email,
+                profilePictureUrl,
+                dob,
+                phoneNumber,
+                updatedOn,
+                JSON.stringify(associatedGroupNames),
+                JSON.stringify(associatedGroupId)
+            ]
         );
+
         return result;
     } catch (error) {
         console.error('Error creating user:', error);
         throw error;
     }
-}
-// Update an existing user
+};
+
 export const alterUserQuery = async (
-    id: string, // id should be the first argument since it's required
+    id: string,
     fieldsToUpdate: {
         name?: string,
         email?: string,
@@ -76,15 +83,14 @@ export const alterUserQuery = async (
         associatedGroupId?: number[]
     }
 ) => {
-    // Ensure the 'updatedOn' field is always updated when making any change
+
     const updatedOn = new Date().toISOString().split('T')[0];
 
     try {
-        // Prepare an array to hold SQL set clauses and values
+
         let setClauses = [];
         let values = [];
 
-        // Dynamically build the query based on the provided fields
         if (fieldsToUpdate.name) {
             setClauses.push('name = ?');
             values.push(fieldsToUpdate.name);
@@ -118,26 +124,25 @@ export const alterUserQuery = async (
             values.push(JSON.stringify(fieldsToUpdate.associatedGroupId));
         }
 
-        // Always update the 'updatedOn' field
+
         setClauses.push('updatedOn = ?');
         values.push(updatedOn);
 
-        // Ensure we have fields to update
         if (setClauses.length === 0) {
             throw new Error('No fields provided to update.');
         }
 
-        // Add the user ID to the query parameters (for the WHERE clause)
+
         values.push(id);
 
-        // Build the final SQL query
+
         const query = `
             UPDATE users
             SET ${setClauses.join(', ')}
             WHERE id = ?
         `;
 
-        // Execute the query with the dynamic values
+
         const [result] = await db.query(query, values);
         return result;
     } catch (error) {

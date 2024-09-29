@@ -3,6 +3,8 @@ import { alterUserQuery, createUserQuery, deleteUserQuery, getAllUsersQuery, get
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
+import passport from 'passport';
+
 export const getUsers = async (req: any, res: any, next: any) => {
     console.log('getUsers');
     const rows = await getAllUsersQuery();
@@ -77,36 +79,19 @@ export const deleteUser = (req: any, res: any, next: any) => {
     deleteUserQuery(id).then((rows: any) => { res.status(204).send(rows) });
 }
 
-export const loginUser = async (req: any, res: any) => {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-        return res.status(400).send({ error: 'Email and password are required.' });
-    }
-
-    try {
-        const rows: any = await getUserByEmailQuery(email);
-        const user = rows[0];
-
-        if (!user) {
-            return res.status(401).send({ error: 'Invalid credentials.' });
+export const loginUser = (req: any, res: any, next: any) => {
+    passport.authenticate('local', { session: false }, (err: any, user: any, info: any) => {
+        if (err) {
+            return next(err);
         }
-
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
+        if (!user) {
             return res.status(401).send({ error: 'Invalid credentials.' });
         }
 
         const token = jwt.sign({ id: user.id, email: user.email }, 'your_jwt_secret', { expiresIn: '1h' });
 
         res.status(200).send({ token });
-    } catch (error) {
-        console.error('Error logging in:', error);
-        res.status(500).send({ error: 'Internal Server Error' });
-    }
+    })(req, res, next);
 };
 
-export const getUserByEmail = async (req: any, res?: any, next?: any) => {
-    const { email } = req.params;
-    getUserByEmailQuery(email).then((rows: any) => { res.status(200).send(rows) });
-}
+

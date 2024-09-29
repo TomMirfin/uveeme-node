@@ -8,13 +8,16 @@ import eventsRoutes from './routes/events';
 import scoresRouter from './routes/scores';
 import registerRouter from './routes/register';
 import cors from "cors";
-import { initializePassport } from './config/passport-config';
 
-
+import passport from 'passport';
+import { passportConfig } from './config/passport-config';
 dotenv.config();
 
 const app = express();
 const PORT = process.env.SERVER_PORT || 3000;
+passportConfig();
+app.use(passport.initialize());
+
 
 app.use(bodyParser.json())
 app.use(cors());
@@ -30,10 +33,7 @@ app.use('/scores', scoresRouter);
 app.post('/register', registerRouter)
 
 // this is what we are working on
-app.post('/login', passport.authenticate('local', { session: false }), (req: any, res: any) => {
-    res.status(200).send({ success: true, user: req.user });
 
-})
 // Error handling middleware
 app.use((err: any, req: any, res: any, next: any) => {
     console.error(err.stack);
