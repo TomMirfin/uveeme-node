@@ -24,7 +24,7 @@ export const createUser = async (req: any, res: any, next: any) => {
     const { name, email, profilePictureUrl, dob, phoneNumber, updatedOn, associatedGroupNames, associatedGroupId, password } = req.body;
 
 
-    if (!name || !email || !password) {
+    if (!name || !email) {
         return res.status(400).send({ error: 'Name, email, and password are required.' });
     }
     const id = uuidv4();
