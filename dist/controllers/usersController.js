@@ -11,14 +11,34 @@ const uuid_1 = require("uuid");
 const passport_1 = __importDefault(require("passport"));
 const getUsers = async (req, res, next) => {
     console.log('getUsers');
-    const rows = await (0, usersModels_1.getAllUsersQuery)();
-    console.log(rows);
-    return res.status(200).send(rows);
+    try {
+        const rows = await (0, usersModels_1.getAllUsersQuery)();
+        console.log(rows);
+        const usersWithoutPasswords = rows.map(({ password, ...user }) => user);
+        return res.status(200).send(usersWithoutPasswords);
+    }
+    catch (error) {
+        console.error('Error retrieving users:', error);
+        return res.status(500).send({ error: 'Internal Server Error' });
+    }
 };
 exports.getUsers = getUsers;
-const getUserById = (req, res, next) => {
-    const { id } = req.params;
-    (0, usersModels_1.getUserByIdQuery)(id).then((rows) => { res.status(200).send(rows); });
+const getUserById = async (req, res) => {
+    const userId = req.params.id;
+    try {
+        const rows = await (0, usersModels_1.getUserByIdQuery)(userId);
+        const user = rows[0];
+        if (!user) {
+            return res.status(404).send({ error: 'User not found.' });
+        }
+        // Exclude the password from the response
+        const { password, ...userResponse } = user;
+        res.status(200).send(userResponse);
+    }
+    catch (error) {
+        console.error('Error retrieving user:', error);
+        res.status(500).send({ error: 'Internal Server Error' });
+    }
 };
 exports.getUserById = getUserById;
 const createUser = async (req, res, next) => {
