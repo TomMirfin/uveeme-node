@@ -47,11 +47,11 @@ export const createUserQuery = async (
     try {
         const createdOn = new Date().toISOString(); // Capture the current timestamp for createdOn
         const [result] = await db.query(
-            `INSERT INTO users (id, password, name, email, profilePictureUrl, dob, phoneNumber, createdOn, updatedOn, associatedGroupNames, associatedGroupsId) 
+            `INSERT INTO users (id, name, email, profilePictureUrl, dob, phoneNumber, createdOn, updatedOn, associatedGroupNames, associatedGroupsId) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 id,
-                hashedPassword,
+
                 name,
                 email,
                 profilePictureUrl,
