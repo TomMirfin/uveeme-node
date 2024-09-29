@@ -12,7 +12,7 @@ export const getAllUsersQuery = async () => {
 }
 
 // Get user by ID
-export const getUserByIdQuery = async (id: number) => {
+export const getUserByIdQuery = async (id: string) => {
     try {
         const [rows, fields] = await db.query('SELECT * FROM users WHERE id = ?', [id]);
         return rows;

@@ -35,8 +35,9 @@ export const passportConfig = () => {
     });
 
     passport.deserializeUser(async (id: string, done) => {
+        const stringId = id.toString();
         try {
-            const rows: any = await getUserByIdQuery(id);
+            const rows: any = await getUserByIdQuery(stringId);
             const user = rows[0];
             done(null, user);
         } catch (error) {

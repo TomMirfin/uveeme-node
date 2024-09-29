@@ -8,6 +8,7 @@ const usersModels_1 = require("../models/usersModels");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const uuid_1 = require("uuid");
+const passport_1 = __importDefault(require("passport"));
 const getUsers = async (req, res, next) => {
     console.log('getUsers');
     const rows = await (0, usersModels_1.getAllUsersQuery)();
@@ -30,6 +31,7 @@ const createUser = async (req, res, next) => {
         const hashedPassword = await bcrypt_1.default.hash(password, 10);
         const rows = await (0, usersModels_1.createUserQuery)(id, name, email, hashedPassword, profilePictureUrl, dob, phoneNumber, updatedOn, associatedGroupNames, associatedGroupId);
         res.status(201).send({ id: id, name, email, profilePictureUrl });
+        ;
     }
     catch (error) {
         console.error('Error creating user:', error);
@@ -54,27 +56,16 @@ const deleteUser = (req, res, next) => {
     (0, usersModels_1.deleteUserQuery)(id).then((rows) => { res.status(204).send(rows); });
 };
 exports.deleteUser = deleteUser;
-const loginUser = async (req, res) => {
-    const { email, password } = req.body;
-    if (!email || !password) {
-        return res.status(400).send({ error: 'Email and password are required.' });
-    }
-    try {
-        const rows = await (0, usersModels_1.getUserByEmailQuery)(email);
-        const user = rows[0];
-        if (!user) {
-            return res.status(401).send({ error: 'Invalid credentials.' });
+const loginUser = (req, res, next) => {
+    passport_1.default.authenticate('local', { session: false }, (err, user, info) => {
+        if (err) {
+            return next(err);
         }
-        const isMatch = await bcrypt_1.default.compare(password, user.password);
-        if (!isMatch) {
+        if (!user) {
             return res.status(401).send({ error: 'Invalid credentials.' });
         }
         const token = jsonwebtoken_1.default.sign({ id: user.id, email: user.email }, 'your_jwt_secret', { expiresIn: '1h' });
         res.status(200).send({ token });
-    }
-    catch (error) {
-        console.error('Error logging in:', error);
-        res.status(500).send({ error: 'Internal Server Error' });
-    }
+    })(req, res, next);
 };
 exports.loginUser = loginUser;

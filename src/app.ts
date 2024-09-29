@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
 import eventsRoutes from './routes/events';
 import scoresRouter from './routes/scores';
-import registerRouter from './routes/register';
+import authRouter from './routes/auth';
 import cors from "cors";
 
 import passport from 'passport';
@@ -30,7 +30,7 @@ app.use('/users', usersRoutes);
 app.use('/groups', groupsRoutes);
 app.use('/events', eventsRoutes);
 app.use('/scores', scoresRouter);
-app.use('/register', registerRouter)
+app.use('/auth', authRouter)
 
 // this is what we are working on
 

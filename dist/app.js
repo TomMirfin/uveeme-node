@@ -10,10 +10,15 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const body_parser_1 = __importDefault(require("body-parser"));
 const events_1 = __importDefault(require("./routes/events"));
 const scores_1 = __importDefault(require("./routes/scores"));
+const auth_1 = __importDefault(require("./routes/auth"));
 const cors_1 = __importDefault(require("cors"));
+const passport_1 = __importDefault(require("passport"));
+const passport_config_1 = require("./config/passport-config");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.SERVER_PORT || 3000;
+(0, passport_config_1.passportConfig)();
+app.use(passport_1.default.initialize());
 app.use(body_parser_1.default.json());
 app.use((0, cors_1.default)());
 // Middleware to parse JSON and URL-encoded bodies
@@ -24,6 +29,8 @@ app.use('/users', users_1.default);
 app.use('/groups', groups_1.default);
 app.use('/events', events_1.default);
 app.use('/scores', scores_1.default);
+app.use('/auth', auth_1.default);
+// this is what we are working on
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);
