@@ -45,7 +45,9 @@ export const createUser = async (req: any, res: any, next: any) => {
 
 
         res.status(201).send({ id: id, name, email, profilePictureUrl });
+        ;
     } catch (error) {
+
         console.error('Error creating user:', error);
         res.status(500).send({ error: 'Internal Server Error' });
     }
@@ -103,3 +105,8 @@ export const loginUser = async (req: any, res: any) => {
         res.status(500).send({ error: 'Internal Server Error' });
     }
 };
+
+export const getUserByEmail = async (req: any, res?: any, next?: any) => {
+    const { email } = req.params;
+    getUserByEmailQuery(email).then((rows: any) => { res.status(200).send(rows) });
+}

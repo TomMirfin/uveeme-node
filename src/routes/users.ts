@@ -6,10 +6,10 @@ const router = express.Router();
 
 router.get('/', getUsers);
 router.get('/:id', getUserById);
-router.post('/', createUser);
 router.patch('/:id/change', alterUser);
 router.delete('/:id', deleteUser);
 router.post('/login', loginUser);
+router.post('/register', createUser);
 
 
 

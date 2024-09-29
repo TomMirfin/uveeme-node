@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { Request } from 'express';
 import Response from 'express';
+import { registerUser } from '../controllers/registerUser';
 export const getAllUsersQuery = async () => {
     try {
         const [rows, fields] = await db.query('SELECT * FROM users');
@@ -152,8 +153,6 @@ export const deleteUserQuery = async (userId: string) => {
     try {
 
         await db.query('DELETE FROM groupinvites WHERE invitedBy = ?', [userId]);
-
-
         const [result] = await db.query('DELETE FROM users WHERE id = ?', [userId]);
 
         return result;
@@ -162,3 +161,5 @@ export const deleteUserQuery = async (userId: string) => {
         throw error;
     }
 };
+
+
