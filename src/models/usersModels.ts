@@ -32,7 +32,6 @@ export const getUserByEmailQuery = async (email: string) => {
         throw error;
     }
 };
-
 export const createUserQuery = async (
     id: string,
     hashedPassword: string,
@@ -46,9 +45,10 @@ export const createUserQuery = async (
     associatedGroupId: number[]
 ) => {
     try {
+        const createdOn = new Date().toISOString(); // Capture the current timestamp for createdOn
         const [result] = await db.query(
-            `INSERT INTO users (id, password, name, email, profilePictureUrl, dob, phoneNumber, updatedOn, associatedGroupNames, associatedGroupsId) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            `INSERT INTO users (id, password, name, email, profilePictureUrl, dob, phoneNumber, createdOn, updatedOn, associatedGroupNames, associatedGroupsId) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 id,
                 hashedPassword,
@@ -57,7 +57,8 @@ export const createUserQuery = async (
                 profilePictureUrl,
                 dob,
                 phoneNumber,
-                updatedOn,
+                createdOn,  // Insert createdOn
+                updatedOn,  // Use the updatedOn value passed in
                 JSON.stringify(associatedGroupNames),
                 JSON.stringify(associatedGroupId)
             ]
@@ -69,6 +70,7 @@ export const createUserQuery = async (
         throw error;
     }
 };
+
 
 export const alterUserQuery = async (
     id: string,

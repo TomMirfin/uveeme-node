@@ -42,8 +42,9 @@ const getUserByEmailQuery = async (email) => {
 exports.getUserByEmailQuery = getUserByEmailQuery;
 const createUserQuery = async (id, hashedPassword, name, email, profilePictureUrl, dob, phoneNumber, updatedOn, associatedGroupNames, associatedGroupId) => {
     try {
-        const [result] = await database_1.default.query(`INSERT INTO users (id, password, name, email, profilePictureUrl, dob, phoneNumber, updatedOn, associatedGroupNames, associatedGroupsId) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [
+        const createdOn = new Date().toISOString(); // Capture the current timestamp for createdOn
+        const [result] = await database_1.default.query(`INSERT INTO users (id, password, name, email, profilePictureUrl, dob, phoneNumber, createdOn, updatedOn, associatedGroupNames, associatedGroupsId) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [
             id,
             hashedPassword,
             name,
@@ -51,7 +52,8 @@ const createUserQuery = async (id, hashedPassword, name, email, profilePictureUr
             profilePictureUrl,
             dob,
             phoneNumber,
-            updatedOn,
+            createdOn, // Insert createdOn
+            updatedOn, // Use the updatedOn value passed in
             JSON.stringify(associatedGroupNames),
             JSON.stringify(associatedGroupId)
         ]);

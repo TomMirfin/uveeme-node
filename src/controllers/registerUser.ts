@@ -21,8 +21,8 @@ export const registerUser = async (req: any, res: any) => {
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
-        const id = uuid();
-        const updatedOn = new Date().toISOString();
+        const id = uuid();  // Generate a unique ID for the user
+        const updatedOn = new Date().toISOString();  // Capture the current time for updatedOn
 
         const result = await createUserQuery(
             id,

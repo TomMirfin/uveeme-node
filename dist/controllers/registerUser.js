@@ -14,8 +14,8 @@ const registerUser = async (req, res) => {
     }
     try {
         const hashedPassword = await bcrypt_1.default.hash(password, 10);
-        const id = (0, uuid_1.v4)();
-        const updatedOn = new Date().toISOString();
+        const id = (0, uuid_1.v4)(); // Generate a unique ID for the user
+        const updatedOn = new Date().toISOString(); // Capture the current time for updatedOn
         const result = await (0, usersModels_1.createUserQuery)(id, hashedPassword, name, email, profilePictureUrl, dob, phoneNumber, updatedOn, associatedGroupNames, associatedGroupId);
         res.status(201).send(result);
     }
