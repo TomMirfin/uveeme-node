@@ -31,6 +31,9 @@ app.use('/groups', groupsRoutes);
 app.use('/events', eventsRoutes);
 app.use('/scores', scoresRouter);
 app.use('/auth', authRouter)
+app.get('/auth/test', (req, res) => {
+    res.send('Test route is working!');
+});
 
 // this is what we are working on
 

@@ -30,6 +30,9 @@ app.use('/groups', groups_1.default);
 app.use('/events', events_1.default);
 app.use('/scores', scores_1.default);
 app.use('/auth', auth_1.default);
+app.get('/auth/test', (req, res) => {
+    res.send('Test route is working!');
+});
 // this is what we are working on
 // Error handling middleware
 app.use((err, req, res, next) => {

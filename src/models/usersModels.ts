@@ -57,8 +57,8 @@ export const createUserQuery = async (
                 profilePictureUrl,
                 dob,
                 phoneNumber,
-                createdOn,  // Insert createdOn
-                updatedOn,  // Use the updatedOn value passed in
+                createdOn,
+                updatedOn,
                 JSON.stringify(associatedGroupNames),
                 JSON.stringify(associatedGroupId)
             ]

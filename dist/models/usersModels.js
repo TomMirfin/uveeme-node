@@ -52,8 +52,8 @@ const createUserQuery = async (id, hashedPassword, name, email, profilePictureUr
             profilePictureUrl,
             dob,
             phoneNumber,
-            createdOn, // Insert createdOn
-            updatedOn, // Use the updatedOn value passed in
+            createdOn,
+            updatedOn,
             JSON.stringify(associatedGroupNames),
             JSON.stringify(associatedGroupId)
         ]);
