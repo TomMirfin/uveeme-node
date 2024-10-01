@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteEventQuery = exports.alterEventQuery = exports.createEventQuery = exports.getEventsForGroupQuery = exports.getEventByIdQuery = void 0;
 const database_1 = __importDefault(require("../database"));
 const uuid_1 = require("uuid");
+const moment_1 = __importDefault(require("moment"));
 const getEventByIdQuery = async (id) => {
     try {
         const query = `
@@ -36,7 +37,7 @@ const getEventsForGroupQuery = async (groupId) => {
     }
 };
 exports.getEventsForGroupQuery = getEventsForGroupQuery;
-const createEventQuery = async (name, description, fromGroup, groupId, location, startDate, endDate, attendees, scoreByMember, status = 'inactive') => {
+const createEventQuery = async (name, description, fromGroup, location, startDate, endDate, attendees, scoreByMember, status = 'inactive') => {
     const id = (0, uuid_1.v4)();
     // Validate that startDate and endDate are valid Date objects
     if (!(startDate instanceof Date) || isNaN(startDate.getTime())) {
@@ -46,6 +47,8 @@ const createEventQuery = async (name, description, fromGroup, groupId, location,
         throw new Error("Invalid end date");
     }
     // Format dates to YYYY-MM-DD
+    const formattedStartDate = (0, moment_1.default)(startDate).format('YYYY-MM-DD');
+    const formattedEndDate = (0, moment_1.default)(endDate).format('YYYY-MM-DD');
     const query = `
         INSERT INTO events (id, name, description, fromGroup, startDate, endDate, location, attendees, scoreByMember, status)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -55,9 +58,8 @@ const createEventQuery = async (name, description, fromGroup, groupId, location,
         name,
         description,
         fromGroup,
-        groupId,
-        startDate,
-        endDate,
+        formattedStartDate, // Use formatted dates here
+        formattedEndDate,
         location,
         JSON.stringify(attendees),
         JSON.stringify(scoreByMember),

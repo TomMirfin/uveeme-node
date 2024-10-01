@@ -18,26 +18,30 @@ export const createEvent = async (req: any, res: any, next: any) => {
         const {
             name,
             description,
-            fromGroup,
-            groupId,
+            fromGroup,  // Presumably the group ID this event is associated with
             location,
             attendees = [],
-            scoreByMember = {},
+            scoreByMember = [],
             startDate,
             endDate,
-            status
+            status = 'INACTIVE' // Default to INACTIVE if not provided
         } = req.body;
 
+        // Validate required fields
         if (!name || !description) {
             return res.status(400).send({ error: 'Name and description are required' });
         }
-        const momentStartDate = moment(startDate).toDate(); // Converts to Date object
+
+        // Convert to Date objects using moment
+        const momentStartDate = moment(startDate).toDate();
         const momentEndDate = moment(endDate).toDate();
+
+
+        // Create event query
         const rows = await createEventQuery(
             name,
             description,
             fromGroup,
-            groupId,
             location,
             momentStartDate,
             momentEndDate,

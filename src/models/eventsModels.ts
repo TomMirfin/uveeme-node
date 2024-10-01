@@ -1,6 +1,6 @@
 import db from '../database';
 import { v4 as uuidv4 } from 'uuid';
-
+import moment from 'moment';
 export const getEventByIdQuery = async (id: number) => {
     try {
         const query = `
@@ -30,13 +30,10 @@ export const getEventsForGroupQuery = async (groupId: number) => {
 }
 
 
-
-
 export const createEventQuery = async (
     name: string,
     description: string,
     fromGroup: string,
-    groupId: string,
     location: string,
     startDate: Date,
     endDate: Date,
@@ -55,7 +52,8 @@ export const createEventQuery = async (
     }
 
     // Format dates to YYYY-MM-DD
-
+    const formattedStartDate = moment(startDate).format('YYYY-MM-DD');
+    const formattedEndDate = moment(endDate).format('YYYY-MM-DD');
 
     const query = `
         INSERT INTO events (id, name, description, fromGroup, startDate, endDate, location, attendees, scoreByMember, status)
@@ -66,15 +64,13 @@ export const createEventQuery = async (
         name,
         description,
         fromGroup,
-        groupId,
-        startDate,
-        endDate,
+        formattedStartDate, // Use formatted dates here
+        formattedEndDate,
         location,
         JSON.stringify(attendees),
         JSON.stringify(scoreByMember),
         status
     ];
-
     try {
         // Insert the event
         await db.query(query, values);
