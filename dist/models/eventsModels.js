@@ -36,7 +36,7 @@ const getEventsForGroupQuery = async (groupId) => {
     }
 };
 exports.getEventsForGroupQuery = getEventsForGroupQuery;
-const createEventQuery = async (name, description, groupId, location, startDate, endDate, attendees, scoreByMember, status = 'inactive') => {
+const createEventQuery = async (name, description, fromGroup, groupId, location, startDate, endDate, attendees, scoreByMember, status = 'inactive') => {
     const id = (0, uuid_1.v4)();
     // Validate that startDate and endDate are valid Date objects
     if (!(startDate instanceof Date) || isNaN(startDate.getTime())) {
@@ -54,6 +54,7 @@ const createEventQuery = async (name, description, groupId, location, startDate,
         id,
         name,
         description,
+        fromGroup,
         groupId,
         startDate,
         endDate,

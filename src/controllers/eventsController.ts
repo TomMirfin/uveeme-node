@@ -18,6 +18,7 @@ export const createEvent = async (req: any, res: any, next: any) => {
         const {
             name,
             description,
+            fromGroup,
             groupId,
             location,
             attendees = [],
@@ -35,6 +36,7 @@ export const createEvent = async (req: any, res: any, next: any) => {
         const rows = await createEventQuery(
             name,
             description,
+            fromGroup,
             groupId,
             location,
             momentStartDate,

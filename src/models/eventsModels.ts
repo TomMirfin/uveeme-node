@@ -35,6 +35,7 @@ export const getEventsForGroupQuery = async (groupId: number) => {
 export const createEventQuery = async (
     name: string,
     description: string,
+    fromGroup: string,
     groupId: string,
     location: string,
     startDate: Date,
@@ -64,6 +65,7 @@ export const createEventQuery = async (
         id,
         name,
         description,
+        fromGroup,
         groupId,
         startDate,
         endDate,
