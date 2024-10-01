@@ -96,20 +96,62 @@ const createEventQuery = async (name, description, fromGroup, location, startDat
     }
 };
 exports.createEventQuery = createEventQuery;
-const alterEventQuery = async (id, name, description, date, location, attendees) => {
+const alterEventQuery = async (id, name, description, startDate, endDate, location, attendeesToRemove = []) => {
+    if (!id) {
+        throw new Error('No event ID provided');
+    }
+    // Initialize the query parts
+    const updates = [];
+    const values = [];
+    // Build the query based on provided parameters
+    if (name) {
+        updates.push('name = ?');
+        values.push(name);
+    }
+    if (description) {
+        updates.push('description = ?');
+        values.push(description);
+    }
+    if (startDate) {
+        updates.push('startDate = ?');
+        values.push(startDate);
+    }
+    if (endDate) {
+        updates.push('endDate = ?');
+        values.push(endDate);
+    }
+    if (location) {
+        updates.push('location = ?');
+        values.push(location);
+    }
+    // Handle attendees to remove
+    if (attendeesToRemove && attendeesToRemove.length > 0) {
+        // Fetch the current attendees
+        const [currentEvent] = await database_1.default.query(`SELECT attendees FROM events WHERE id = ?`, [id]);
+        const currentAttendees = JSON.parse(currentEvent[0]?.attendees || '[]');
+        // Filter out the users to remove
+        const updatedAttendees = currentAttendees.filter(userId => !attendeesToRemove.includes(userId));
+        updates.push('attendees = ?');
+        values.push(JSON.stringify(updatedAttendees)); // Update attendees with the new array
+    }
+    // Ensure there's at least one column to update
+    if (updates.length === 0) {
+        throw new Error('No fields to update');
+    }
+    // Construct the final query
     const query = `
         UPDATE events
-        SET id=?, name = ?, description = ?, date = ?, location = ?, attendees = ? 
-        WHERE id = ?
+        SET ${updates.join(', ')} 
+        WHERE ID = ?
     `;
-    const values = [id, name, description, date, location, attendees];
+    values.push(id); // Add id to the values at the end
     try {
         const [result] = await database_1.default.query(query, values);
         return result;
     }
     catch (error) {
         console.error('Error altering event:', error);
-        throw error;
+        throw new Error('Failed to alter event');
     }
 };
 exports.alterEventQuery = alterEventQuery;

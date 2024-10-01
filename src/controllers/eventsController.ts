@@ -61,35 +61,35 @@ export const alterEvent = async (req: any, res: any, next: any) => {
     console.log('Request Body:', req.body);
 
     try {
+        // Destructure the request body
         const {
-            id,
+            id, // Added ID for the event to update
             name,
             description,
-            date,
+            startDate,  // Changed from date to startDate for consistency with your query function
+            endDate,    // Added endDate for completeness
             location,
             attendees = []
         } = req.body;
 
-        if (!id) {
-            return res.status(400).send({ error: 'Event ID is required' });
-        }
-
+        // Call the query function with optional parameters
         const rows = await alterEventQuery(
             id,
             name,
             description,
-            date,
+            startDate,
+            endDate,
             location,
             attendees
-
         );
 
-        res.status(200).send(rows);
+        res.status(200).send({ message: 'Event updated successfully', rows });
     } catch (error) {
         console.error('Error updating event:', error);
         res.status(500).send({ error: 'Internal Server Error' });
     }
 };
+
 
 
 export const deleteEvent = async (req: any, res: any, next: any) => {

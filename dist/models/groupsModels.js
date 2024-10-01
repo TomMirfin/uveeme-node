@@ -75,7 +75,8 @@ lastEvent = null, nextEvent = null, groupImage = '', totalScore = 0, admin = [],
             nextEvent ? nextEvent : '1970-01-01',
             groupImage,
             totalScore,
-            JSON.stringify(admin)
+            JSON.stringify(admin),
+            JSON.stringify(events)
         ];
         const [result] = await database_1.default.query(query, values);
         return { id, result };
