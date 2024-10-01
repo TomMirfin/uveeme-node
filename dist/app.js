@@ -24,7 +24,7 @@ app.use((0, cors_1.default)());
 // Middleware to parse JSON and URL-encoded bodies
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
-// Route handlers
+// Route handlersp
 app.use('/users', users_1.default);
 app.use('/groups', groups_1.default);
 app.use('/events', events_1.default);

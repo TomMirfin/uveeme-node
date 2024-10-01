@@ -15,11 +15,11 @@ exports.getEventsForGroup = getEventsForGroup;
 const createEvent = async (req, res, next) => {
     console.log('Request Body:', req.body);
     try {
-        const { name, description, groupId, location, attendees = [], scoreByMember = {}, startDate, endDate } = req.body;
+        const { name, description, groupId, location, attendees = [], scoreByMember = {}, startDate, endDate, status } = req.body;
         if (!name || !description) {
             return res.status(400).send({ error: 'Name and description are required' });
         }
-        const rows = await (0, eventsModels_1.createEventQuery)(name, description, groupId, location, attendees, scoreByMember, startDate, endDate);
+        const rows = await (0, eventsModels_1.createEventQuery)(name, description, groupId, location, attendees, scoreByMember, startDate, endDate, status);
         res.status(201).json(rows);
     }
     catch (error) {

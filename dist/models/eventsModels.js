@@ -36,14 +36,14 @@ const getEventsForGroupQuery = async (groupId) => {
     }
 };
 exports.getEventsForGroupQuery = getEventsForGroupQuery;
-const createEventQuery = async (name, description, groupId, location, startDate, endDate, attendees, scoreByMember) => {
+const createEventQuery = async (name, description, groupId, location, startDate, endDate, attendees, scoreByMember, status = 'inactive') => {
     const id = (0, uuid_1.v4)();
     // Format dates to YYYY-MM-DD
     const formattedStartDate = startDate.toISOString().split('T')[0];
     const formattedEndDate = endDate.toISOString().split('T')[0];
     const query = `
-        INSERT INTO events (id, name, description, fromGroup, startDate, endDate, location, attendees, scoreByMember)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO events (id, name, description, fromGroup, startDate, endDate, location, attendees, scoreByMember, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     const values = [
         id,
@@ -54,7 +54,8 @@ const createEventQuery = async (name, description, groupId, location, startDate,
         formattedEndDate,
         location,
         JSON.stringify(attendees),
-        JSON.stringify(scoreByMember)
+        JSON.stringify(scoreByMember),
+        status
     ];
     try {
         // Insert the event

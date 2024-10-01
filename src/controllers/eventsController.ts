@@ -23,7 +23,8 @@ export const createEvent = async (req: any, res: any, next: any) => {
             attendees = [],
             scoreByMember = {},
             startDate,
-            endDate
+            endDate,
+            status
         } = req.body;
 
         if (!name || !description) {
@@ -38,7 +39,8 @@ export const createEvent = async (req: any, res: any, next: any) => {
             attendees,
             scoreByMember,
             startDate,
-            endDate
+            endDate,
+            status
         );
 
         res.status(201).json(rows);

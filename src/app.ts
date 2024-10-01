@@ -25,7 +25,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Route handlers
+// Route handlersp
 app.use('/users', usersRoutes);
 app.use('/groups', groupsRoutes);
 app.use('/events', eventsRoutes);

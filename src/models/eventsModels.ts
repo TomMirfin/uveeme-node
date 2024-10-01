@@ -40,6 +40,7 @@ export const createEventQuery = async (
     endDate: Date,
     attendees: string[],
     scoreByMember: { memberId: string, score: number }[],
+    status: string = 'inactive'
 ) => {
     const id = uuidv4();
 
@@ -48,8 +49,8 @@ export const createEventQuery = async (
     const formattedEndDate = endDate.toISOString().split('T')[0];
 
     const query = `
-        INSERT INTO events (id, name, description, fromGroup, startDate, endDate, location, attendees, scoreByMember)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO events (id, name, description, fromGroup, startDate, endDate, location, attendees, scoreByMember, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     const values = [
         id,
@@ -60,7 +61,8 @@ export const createEventQuery = async (
         formattedEndDate,
         location,
         JSON.stringify(attendees),
-        JSON.stringify(scoreByMember)
+        JSON.stringify(scoreByMember),
+        status
     ];
 
     try {
