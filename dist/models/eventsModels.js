@@ -38,6 +38,13 @@ const getEventsForGroupQuery = async (groupId) => {
 exports.getEventsForGroupQuery = getEventsForGroupQuery;
 const createEventQuery = async (name, description, groupId, location, startDate, endDate, attendees, scoreByMember, status = 'inactive') => {
     const id = (0, uuid_1.v4)();
+    // Validate that startDate and endDate are valid Date objects
+    if (!(startDate instanceof Date) || isNaN(startDate.getTime())) {
+        throw new Error("Invalid start date");
+    }
+    if (!(endDate instanceof Date) || isNaN(endDate.getTime())) {
+        throw new Error("Invalid end date");
+    }
     // Format dates to YYYY-MM-DD
     const formattedStartDate = startDate.toISOString().split('T')[0];
     const formattedEndDate = endDate.toISOString().split('T')[0];
