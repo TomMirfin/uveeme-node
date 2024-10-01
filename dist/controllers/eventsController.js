@@ -1,7 +1,11 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteEvent = exports.alterEvent = exports.createEvent = exports.getEventsForGroup = exports.getEventById = void 0;
 const eventsModels_1 = require("../models/eventsModels");
+const moment_1 = __importDefault(require("moment"));
 const getEventById = (req, res, next) => {
     const { id } = req.params;
     (0, eventsModels_1.getEventByIdQuery)(id).then((rows) => { res.status(200).send(rows); });
@@ -19,7 +23,9 @@ const createEvent = async (req, res, next) => {
         if (!name || !description) {
             return res.status(400).send({ error: 'Name and description are required' });
         }
-        const rows = await (0, eventsModels_1.createEventQuery)(name, description, groupId, location, attendees, scoreByMember, startDate, endDate, status);
+        const momentStartDate = (0, moment_1.default)(startDate).toDate(); // Converts to Date object
+        const momentEndDate = (0, moment_1.default)(endDate).toDate();
+        const rows = await (0, eventsModels_1.createEventQuery)(name, description, groupId, location, momentStartDate, momentEndDate, attendees, scoreByMember, status);
         res.status(201).json(rows);
     }
     catch (error) {

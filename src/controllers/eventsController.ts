@@ -1,5 +1,5 @@
 import { getEventByIdQuery, getEventsForGroupQuery, createEventQuery, alterEventQuery, deleteEventQuery } from "../models/eventsModels";
-
+import moment from 'moment';
 export const getEventById = (req: any, res: any, next: any) => {
     const { id } = req.params;
     getEventByIdQuery(id).then((rows: any) => { res.status(200).send(rows) });
@@ -30,16 +30,17 @@ export const createEvent = async (req: any, res: any, next: any) => {
         if (!name || !description) {
             return res.status(400).send({ error: 'Name and description are required' });
         }
-
+        const momentStartDate = moment(startDate).toDate(); // Converts to Date object
+        const momentEndDate = moment(endDate).toDate();
         const rows = await createEventQuery(
             name,
             description,
             groupId,
             location,
+            momentStartDate,
+            momentEndDate,
             attendees,
             scoreByMember,
-            startDate,
-            endDate,
             status
         );
 

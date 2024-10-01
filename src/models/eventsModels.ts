@@ -54,8 +54,7 @@ export const createEventQuery = async (
     }
 
     // Format dates to YYYY-MM-DD
-    const formattedStartDate = startDate.toISOString().split('T')[0];
-    const formattedEndDate = endDate.toISOString().split('T')[0];
+
 
     const query = `
         INSERT INTO events (id, name, description, fromGroup, startDate, endDate, location, attendees, scoreByMember, status)
@@ -66,8 +65,8 @@ export const createEventQuery = async (
         name,
         description,
         groupId,
-        formattedStartDate,
-        formattedEndDate,
+        startDate,
+        endDate,
         location,
         JSON.stringify(attendees),
         JSON.stringify(scoreByMember),
