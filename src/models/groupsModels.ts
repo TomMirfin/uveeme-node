@@ -60,7 +60,8 @@ export const createGroupQuery = async (
     nextEvent: Date | null = null,
     groupImage: string = '',
     totalScore: number = 0,
-    admin: string[] = []
+    admin: string[] = [],
+    events: string[] = []
 
 ) => {
     const id = uuidv4();
@@ -68,9 +69,9 @@ export const createGroupQuery = async (
         const query = `
             INSERT INTO \`groups\` (
                 id, name, description, membersNames, memberTypes, membersIds,
-                scoreByMember, lastEvent, nextEvent, groupImage, totalScore, admin
+                scoreByMember, lastEvent, nextEvent, groupImage, totalScore, admin, events
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
         const values = [
             id,

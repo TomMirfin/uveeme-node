@@ -34,7 +34,8 @@ export const createGroup = async (req: any, res: any, next: any) => {
             nextEvent = new Date(),
             groupImage = '',
             totalScore = 0,
-            admin = []
+            admin = [],
+            events = []
         } = req.body;
 
 
@@ -54,7 +55,8 @@ export const createGroup = async (req: any, res: any, next: any) => {
             nextEvent,
             groupImage,
             totalScore,
-            admin
+            admin,
+            events
         );
 
 

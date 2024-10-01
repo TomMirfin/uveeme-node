@@ -23,11 +23,11 @@ exports.getGroupsContainingUser = getGroupsContainingUser;
 const createGroup = async (req, res, next) => {
     console.log('Request Body:', req.body);
     try {
-        const { name, description, membersNames = [], memberTypes = [{}], membersIds = [], scoreByMember = {}, lastEvent = new Date(), nextEvent = new Date(), groupImage = '', totalScore = 0, admin = [] } = req.body;
+        const { name, description, membersNames = [], memberTypes = [{}], membersIds = [], scoreByMember = {}, lastEvent = new Date(), nextEvent = new Date(), groupImage = '', totalScore = 0, admin = [], events = [] } = req.body;
         if (!name || !description) {
             return res.status(400).send({ error: 'Name and description are required' });
         }
-        const { id, result } = await (0, groupsModels_1.createGroupQuery)(name, description, membersNames, memberTypes, membersIds, scoreByMember, lastEvent, nextEvent, groupImage, totalScore, admin);
+        const { id, result } = await (0, groupsModels_1.createGroupQuery)(name, description, membersNames, memberTypes, membersIds, scoreByMember, lastEvent, nextEvent, groupImage, totalScore, admin, events);
         res.status(201).json({ success: true, groupId: id });
     }
     catch (error) {

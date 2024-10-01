@@ -53,15 +53,15 @@ const getGroupByIdQuery = async (id) => {
 };
 exports.getGroupByIdQuery = getGroupByIdQuery;
 const createGroupQuery = async (name, description = '', membersNames = [], memberTypes = [], membersIds = [], scoreByMember = {}, // JSON object for scores
-lastEvent = null, nextEvent = null, groupImage = '', totalScore = 0, admin = []) => {
+lastEvent = null, nextEvent = null, groupImage = '', totalScore = 0, admin = [], events = []) => {
     const id = (0, uuid_1.v4)();
     try {
         const query = `
             INSERT INTO \`groups\` (
                 id, name, description, membersNames, memberTypes, membersIds,
-                scoreByMember, lastEvent, nextEvent, groupImage, totalScore, admin
+                scoreByMember, lastEvent, nextEvent, groupImage, totalScore, admin, events
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
         const values = [
             id,
