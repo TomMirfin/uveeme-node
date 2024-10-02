@@ -108,73 +108,62 @@ export const createEventQuery = async (
 
 
 export const alterEventQuery = async (
-    id: string, name: string, description: string, startDate: string, endDate: string, location: string, attendeesToRemove: string[] = []
+    id: string,
+    name?: string,
+    description?: string,
+    startDate?: string,
+    endDate?: string,
+    location?: string,
+    attendeesToRemove: string[] = []
 ) => {
+    let query;
+    let values: any[] = [];
 
-    if (!id) {
-        throw new Error('No event ID provided');
+    // Fetch current attendees if attendeesToRemove is provided
+    let currentAttendees: string[] = [];
+    if (attendeesToRemove.length > 0) {
+        const [rows]: any = await db.query(`SELECT attendees FROM events WHERE id = ?`, [id]);
+        currentAttendees = JSON.parse(rows[0]?.attendees || '[]');
+
+        // Filter out the users to remove from attendees
+        const updatedAttendees = currentAttendees.filter((userId: string) => !attendeesToRemove.includes(userId));
+
+        values.push(JSON.stringify(updatedAttendees));
     }
 
-    // Initialize the query parts
-    const updates: string[] = [];
-    const values: any[] = [];
-
-    // Build the query based on provided parameters
-    if (name) {
-        updates.push('name = ?');
-        values.push(name);
+    // Construct query based on the fields provided
+    if (name && description && startDate && endDate && location) {
+        query = `UPDATE events SET name = ?, description = ?, startDate = ?, endDate = ?, location = ?, attendees = ? WHERE id = ?`;
+        values = [name, description, startDate, endDate, location, JSON.stringify(currentAttendees), id];
+    } else if (!name) {
+        query = `UPDATE events SET description = ?, startDate = ?, endDate = ?, location = ?, attendees = ? WHERE id = ?`;
+        values = [description, startDate, endDate, location, JSON.stringify(currentAttendees), id];
+    } else if (!description) {
+        query = `UPDATE events SET name = ?, startDate = ?, endDate = ?, location = ?, attendees = ? WHERE id = ?`;
+        values = [name, startDate, endDate, location, JSON.stringify(currentAttendees), id];
+    } else if (!startDate) {
+        query = `UPDATE events SET name = ?, description = ?, endDate = ?, location = ?, attendees = ? WHERE id = ?`;
+        values = [name, description, endDate, location, JSON.stringify(currentAttendees), id];
+    } else if (!endDate) {
+        query = `UPDATE events SET name = ?, description = ?, startDate = ?, location = ?, attendees = ? WHERE id = ?`;
+        values = [name, description, startDate, location, JSON.stringify(currentAttendees), id];
+    } else if (!location) {
+        query = `UPDATE events SET name = ?, description = ?, startDate = ?, endDate = ?, attendees = ? WHERE id = ?`;
+        values = [name, description, startDate, endDate, JSON.stringify(currentAttendees), id];
+    } else if (attendeesToRemove.length > 0) {
+        query = `UPDATE events SET attendees = ? WHERE id = ?`;
+        values = [JSON.stringify(currentAttendees), id];
     }
-    if (description) {
-        updates.push('description = ?');
-        values.push(description);
-    }
-    if (startDate) {
-        updates.push('startDate = ?');
-        values.push(startDate);
-    }
-    if (endDate) {
-        updates.push('endDate = ?');
-        values.push(endDate);
-    }
-    if (location) {
-        updates.push('location = ?');
-        values.push(location);
-    }
-
-    // Handle attendees to remove
-    if (attendeesToRemove && attendeesToRemove.length > 0) {
-        // Fetch the current attendees
-        const [currentEvent]: any = await db.query(`SELECT attendees FROM events WHERE id = ?`, [id]);
-        const currentAttendees: string[] = JSON.parse(currentEvent[0]?.attendees || '[]');
-
-        // Filter out the users to remove
-        const updatedAttendees = currentAttendees.filter(userId => !attendeesToRemove.includes(userId));
-
-        updates.push('attendees = ?');
-        values.push(JSON.stringify(updatedAttendees)); // Update attendees with the new array
-    }
-
-    // Ensure there's at least one column to update
-    if (updates.length === 0) {
-        throw new Error('No fields to update');
-    }
-
-    // Construct the final query
-    const query = `
-        UPDATE events
-        SET ${updates.join(', ')} 
-        WHERE ID = ?
-    `;
-    values.push(id); // Add id to the values at the end
 
     try {
-        const [result] = await db.query(query, values);
+        const [result] = await db.query(query as string, values);
         return result;
     } catch (error) {
-        console.error('Error altering event:', error);
-        throw new Error('Failed to alter event');
+        console.error('Error updating event:', error);
+        throw error;
     }
 };
+
 
 export const deleteEventQuery = async (id: number) => {
     const query = `

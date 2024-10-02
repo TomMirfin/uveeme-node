@@ -61,13 +61,13 @@ export const alterEvent = async (req: any, res: any, next: any) => {
     console.log('Request Body:', req.body);
 
     try {
-        // Destructure the request body
+
         const {
-            id, // Added ID for the event to update
+            id,
             name,
             description,
-            startDate,  // Changed from date to startDate for consistency with your query function
-            endDate,    // Added endDate for completeness
+            startDate,
+            endDate,
             location,
             attendees = []
         } = req.body;

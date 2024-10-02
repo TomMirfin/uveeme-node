@@ -42,11 +42,7 @@ exports.createEvent = createEvent;
 const alterEvent = async (req, res, next) => {
     console.log('Request Body:', req.body);
     try {
-        // Destructure the request body
-        const { id, // Added ID for the event to update
-        name, description, startDate, // Changed from date to startDate for consistency with your query function
-        endDate, // Added endDate for completeness
-        location, attendees = [] } = req.body;
+        const { id, name, description, startDate, endDate, location, attendees = [] } = req.body;
         // Call the query function with optional parameters
         const rows = await (0, eventsModels_1.alterEventQuery)(id, name, description, startDate, endDate, location, attendees);
         res.status(200).send({ message: 'Event updated successfully', rows });
