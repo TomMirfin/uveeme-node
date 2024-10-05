@@ -69,7 +69,8 @@ export const alterEvent = async (req: any, res: any, next: any) => {
             startDate,
             endDate,
             location,
-            attendees = []
+            attendees = [],
+            scoreByMember,
         } = req.body;
 
         // Call the query function with optional parameters
@@ -80,7 +81,8 @@ export const alterEvent = async (req: any, res: any, next: any) => {
             startDate,
             endDate,
             location,
-            attendees
+            attendees,
+            scoreByMember
         );
 
         res.status(200).send({ message: 'Event updated successfully', rows });

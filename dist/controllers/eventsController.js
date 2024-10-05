@@ -42,9 +42,9 @@ exports.createEvent = createEvent;
 const alterEvent = async (req, res, next) => {
     console.log('Request Body:', req.body);
     try {
-        const { id, name, description, startDate, endDate, location, attendees = [] } = req.body;
+        const { id, name, description, startDate, endDate, location, attendees = [], scoreByMember, } = req.body;
         // Call the query function with optional parameters
-        const rows = await (0, eventsModels_1.alterEventQuery)(id, name, description, startDate, endDate, location, attendees);
+        const rows = await (0, eventsModels_1.alterEventQuery)(id, name, description, startDate, endDate, location, attendees, scoreByMember);
         res.status(200).send({ message: 'Event updated successfully', rows });
     }
     catch (error) {
