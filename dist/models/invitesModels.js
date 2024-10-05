@@ -21,7 +21,7 @@ const getAllInvitesQuery = async (id) => {
     }
 };
 exports.getAllInvitesQuery = getAllInvitesQuery;
-const sendInviteToQuery = async (inviter, invitee, groupId) => {
+const sendInviteToQuery = async (invitedBy, invitee, groupId) => {
     const status = 'PENDING';
     const notificationSent = 1;
     const id = (0, uuid_1.v4)();
@@ -30,7 +30,7 @@ const sendInviteToQuery = async (inviter, invitee, groupId) => {
         VALUES (?, ?, ?, ?, ?, ?)
     `;
     try {
-        const [result] = await database_1.default.query(query, [id, inviter, invitee, groupId, status, notificationSent]);
+        const [result] = await database_1.default.query(query, [id, invitedBy, invitee, groupId, status, notificationSent]);
         return result;
     }
     catch (error) {

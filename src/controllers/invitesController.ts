@@ -30,10 +30,10 @@ export const getInvitesForUser = (req: any, res: any) => {
 
 export const sendInviteTo = async (req: any, res: any) => {
 
-    const { inviter, invitee, groupId } = req.body;
+    const { invitedBy, invitee, groupId } = req.body;
     console.log('sendInviteTo');
     try {
-        const rows = await sendInviteToQuery(inviter, invitee, groupId);
+        const rows = await sendInviteToQuery(invitedBy, invitee, groupId);
         res.status(201).send({ success: true, rows });
     } catch (error) {
         console.error('Error sending invite:', error);
