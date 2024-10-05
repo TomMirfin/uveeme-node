@@ -177,7 +177,21 @@ export const alterEventQuery = async (
     if (scoreByMember && Array.isArray(scoreByMember)) {
         // Fetch current scores for this event
         const [currentScoresRows]: any = await db.query(`SELECT scoreByMember FROM events WHERE id = ?`, [id]);
-        const currentScores: { memberId: string; score: number }[] = JSON.parse(currentScoresRows[0]?.scoreByMember || '[]');
+
+        // Check if the currentScoresRows exists and has scoreByMember
+        let currentScores: { memberId: string; score: number }[] = [];
+
+        // Parse JSON safely
+        if (currentScoresRows.length > 0) {
+            const scoreByMemberValue = currentScoresRows[0]?.scoreByMember;
+
+            // Check if scoreByMemberValue is already a JSON string or object
+            if (typeof scoreByMemberValue === 'string') {
+                currentScores = JSON.parse(scoreByMemberValue);
+            } else if (typeof scoreByMemberValue === 'object') {
+                currentScores = scoreByMemberValue; // Already an object
+            }
+        }
 
         // Update scores based on provided data
         scoreByMember.forEach(({ memberId, score }) => {
@@ -219,41 +233,6 @@ export const alterEventQuery = async (
         throw error;
     }
 };
-
-export const alterEvent = async (req: any, res: any, next: any) => {
-    console.log('Request Body:', req.body);
-
-    try {
-        const {
-            id,
-            name,
-            description,
-            startDate,
-            endDate,
-            location,
-            attendeesToRemove = [], // Rename to be clear
-            scoreByMember,
-        } = req.body;
-
-        // Call the query function with optional parameters
-        const rows = await alterEventQuery(
-            id,
-            name,
-            description,
-            startDate,
-            endDate,
-            location,
-            attendeesToRemove,
-            scoreByMember
-        );
-
-        res.status(200).send({ message: 'Event updated successfully', rows });
-    } catch (error) {
-        console.error('Error updating event:', error);
-        res.status(500).send({ error: 'Internal Server Error', details: error.message }); // More informative response
-    }
-};
-
 
 
 export const deleteEventQuery = async (id: number) => {

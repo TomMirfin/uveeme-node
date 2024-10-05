@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteEventQuery = exports.alterEvent = exports.alterEventQuery = exports.createEventQuery = exports.getEventsForGroupQuery = exports.getEventByIdQuery = void 0;
+exports.deleteEventQuery = exports.alterEventQuery = exports.createEventQuery = exports.getEventsForGroupQuery = exports.getEventByIdQuery = void 0;
 const database_1 = __importDefault(require("../database"));
 const uuid_1 = require("uuid");
 const moment_1 = __importDefault(require("moment"));
@@ -150,7 +150,19 @@ const alterEventQuery = async (id, name, description, startDate, endDate, locati
     if (scoreByMember && Array.isArray(scoreByMember)) {
         // Fetch current scores for this event
         const [currentScoresRows] = await database_1.default.query(`SELECT scoreByMember FROM events WHERE id = ?`, [id]);
-        const currentScores = JSON.parse(currentScoresRows[0]?.scoreByMember || '[]');
+        // Check if the currentScoresRows exists and has scoreByMember
+        let currentScores = [];
+        // Parse JSON safely
+        if (currentScoresRows.length > 0) {
+            const scoreByMemberValue = currentScoresRows[0]?.scoreByMember;
+            // Check if scoreByMemberValue is already a JSON string or object
+            if (typeof scoreByMemberValue === 'string') {
+                currentScores = JSON.parse(scoreByMemberValue);
+            }
+            else if (typeof scoreByMemberValue === 'object') {
+                currentScores = scoreByMemberValue; // Already an object
+            }
+        }
         // Update scores based on provided data
         scoreByMember.forEach(({ memberId, score }) => {
             // Check if the member already has a score
@@ -189,21 +201,6 @@ const alterEventQuery = async (id, name, description, startDate, endDate, locati
     }
 };
 exports.alterEventQuery = alterEventQuery;
-const alterEvent = async (req, res, next) => {
-    console.log('Request Body:', req.body);
-    try {
-        const { id, name, description, startDate, endDate, location, attendeesToRemove = [], // Rename to be clear
-        scoreByMember, } = req.body;
-        // Call the query function with optional parameters
-        const rows = await (0, exports.alterEventQuery)(id, name, description, startDate, endDate, location, attendeesToRemove, scoreByMember);
-        res.status(200).send({ message: 'Event updated successfully', rows });
-    }
-    catch (error) {
-        console.error('Error updating event:', error);
-        res.status(500).send({ error: 'Internal Server Error', details: error.message }); // More informative response
-    }
-};
-exports.alterEvent = alterEvent;
 const deleteEventQuery = async (id) => {
     const query = `
         DELETE FROM events
