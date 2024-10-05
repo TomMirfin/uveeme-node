@@ -37,10 +37,10 @@ const getEventsForGroupQuery = async (groupId) => {
     }
 };
 exports.getEventsForGroupQuery = getEventsForGroupQuery;
-const createEventQuery = async (name, description, fromGroup, // groupId
-location, startDate, endDate, attendees, // Attendees passed explicitly
-scoreByMember, status = 'inactive') => {
+const createEventQuery = async (name, description, fromGroup, location, startDate, endDate, attendees, scoreByMember = [], // Optional
+status = 'inactive') => {
     const id = (0, uuid_1.v4)();
+    const scoreIds = []; // Array to store the IDs of scorebyevent entries
     // Validate that startDate and endDate are valid Date objects
     if (!(startDate instanceof Date) || isNaN(startDate.getTime())) {
         throw new Error("Invalid start date");
@@ -51,45 +51,51 @@ scoreByMember, status = 'inactive') => {
     // Format dates to YYYY-MM-DD
     const formattedStartDate = (0, moment_1.default)(startDate).format('YYYY-MM-DD');
     const formattedEndDate = (0, moment_1.default)(endDate).format('YYYY-MM-DD');
+    const query = `
+        INSERT INTO events (id, name, description, fromGroup, startDate, endDate, location, attendees, scoreByMember, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    const values = [
+        id,
+        name,
+        description,
+        fromGroup,
+        formattedStartDate, // Use formatted dates here
+        formattedEndDate,
+        location,
+        JSON.stringify(attendees),
+        JSON.stringify(scoreByMember), // This can be an empty array if no scores are provided initially
+        status
+    ];
     try {
-        // Fetch the group member IDs from the groups table
-        const groupQuery = `
-            SELECT membersIds FROM \`groups\`
-            WHERE id = ?
-        `;
-        const [groupRows] = await database_1.default.query(groupQuery, [fromGroup]);
-        if (!Array.isArray(groupRows) || groupRows.length === 0) {
-            throw new Error('Group not found');
-        }
-        // Assuming memberIds is a JSON array of member IDs
-        const groupMemberIds = groupRows[0].membersIds || [];
-        // Combine the group members and the explicitly passed attendees
-        const allAttendees = [...new Set([...groupMemberIds, ...attendees])];
         // Insert the event
-        const eventQuery = `
-            INSERT INTO events (id, name, description, fromGroup, startDate, endDate, location, attendees, scoreByMember, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `;
-        const eventValues = [
-            id,
-            name,
-            description,
-            fromGroup,
-            formattedStartDate, // Use formatted dates here
-            formattedEndDate,
-            location,
-            JSON.stringify(allAttendees), // Store all attendees as JSON
-            JSON.stringify(scoreByMember),
-            status
-        ];
-        await database_1.default.query(eventQuery, eventValues);
-        // Insert default scores into scorebyevent table
-        for (const { memberId, score } of scoreByMember) {
+        await database_1.default.query(query, values);
+        // Fetch all member IDs from the group to insert into scorebyevent table
+        const membersQuery = `SELECT memberId FROM groupmembers WHERE groupId = ?`; // Adjust the table and column names as per your schema
+        const [membersRows] = await database_1.default.query(membersQuery, [fromGroup]);
+        const members = Array.isArray(membersRows) ? membersRows : [];
+        // Create score entries for each member in scorebyevent table
+        for (const member of members) {
+            const scoreId = (0, uuid_1.v4)(); // Generate a unique ID for each score entry
+            const score = 0; // Set default score to 0 or any default value you prefer
+            // Use INSERT ... ON DUPLICATE KEY UPDATE to ensure up-to-date scores
             await database_1.default.query(`
-                INSERT INTO scorebyevent (eventId, memberId, score)
-                VALUES (?, ?, ?)
+                INSERT INTO scorebyevent (id, eventId, memberId, score)
+                VALUES (?, ?, ?, ?)
                 ON DUPLICATE KEY UPDATE score = VALUES(score);
-            `, [id, memberId, score]);
+            `, [scoreId, id, member.memberId, score]); // Assuming memberId is available in the returned member object
+            scoreIds.push(scoreId); // Store the score ID
+        }
+        // Insert or update scores for the provided members
+        for (const { memberId, score } of scoreByMember) {
+            const scoreId = (0, uuid_1.v4)(); // Generate a unique ID for the provided score
+            // Use INSERT ... ON DUPLICATE KEY UPDATE to ensure up-to-date scores
+            await database_1.default.query(`
+                INSERT INTO scorebyevent (id, eventId, memberId, score)
+                VALUES (?, ?, ?, ?)
+                ON DUPLICATE KEY UPDATE score = VALUES(score);
+            `, [scoreId, id, memberId, score]);
+            scoreIds.push(scoreId); // Store the score ID
         }
         // Update the scoreByMember field in the events table
         await database_1.default.query(`
@@ -103,7 +109,8 @@ scoreByMember, status = 'inactive') => {
             )
             WHERE id = ?;
         `, [id, id]);
-        return { id };
+        // Return the event ID and the score IDs
+        return { eventId: id, scoreIds }; // Return both IDs
     }
     catch (error) {
         console.error('Error creating event:', error);
