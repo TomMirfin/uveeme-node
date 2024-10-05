@@ -17,7 +17,7 @@ const registerUser = async (req, res) => {
         const id = (0, uuid_1.v4)(); // Generate a unique ID for the user
         const updatedOn = new Date().toISOString(); // Capture the current time for updatedOn
         const result = await (0, usersModels_1.createUserQuery)(id, hashedPassword, name, email, profilePictureUrl, dob, phoneNumber, updatedOn, associatedGroupNames, associatedGroupId);
-        res.status(201).send(result);
+        res.status(201).send({ success: true, id, result });
     }
     catch (error) {
         console.error('Error registering user:', error);

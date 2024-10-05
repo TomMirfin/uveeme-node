@@ -37,7 +37,8 @@ export const registerUser = async (req: any, res: any) => {
             associatedGroupId
         );
 
-        res.status(201).send(result);
+        res.status(201).send({ success: true, id, result });
+
     } catch (error) {
         console.error('Error registering user:', error);
         res.status(500).send({ error: 'Internal Server Error' });
