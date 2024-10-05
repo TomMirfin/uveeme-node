@@ -86,7 +86,7 @@ exports.declineInviteQuery = declineInviteQuery;
 const getInviteByIdQuery = async (id) => {
     try {
         const query = `
-            SELECT * FROM invites
+            SELECT * FROM groupinvites
             WHERE id = ?
         `;
         const [rows] = await database_1.default.query(query, [id]);
@@ -101,7 +101,7 @@ exports.getInviteByIdQuery = getInviteByIdQuery;
 const getInvitesForGroupQuery = async (groupId) => {
     try {
         const query = `
-            SELECT * FROM invites
+            SELECT * FROM groupinvites
             WHERE groupId = ?
         `;
         const [rows] = await database_1.default.query(query, [groupId]);
@@ -116,7 +116,7 @@ exports.getInvitesForGroupQuery = getInvitesForGroupQuery;
 const getInvitesForUserQuery = async (id) => {
     try {
         const query = `
-            SELECT * FROM invites
+            SELECT * FROM groupinvites
             WHERE invitee = ?
         `;
         const [rows] = await database_1.default.query(query, [id]);
@@ -131,7 +131,7 @@ exports.getInvitesForUserQuery = getInvitesForUserQuery;
 const getInvitesSentByUserQuery = async (id) => {
     try {
         const query = `
-            SELECT * FROM invites
+            SELECT * FROM groupinvites
             WHERE inviter = ?
         `;
         const [rows] = await database_1.default.query(query, [id]);
@@ -146,7 +146,7 @@ exports.getInvitesSentByUserQuery = getInvitesSentByUserQuery;
 const getInvitesByStatusQuery = async (status) => {
     try {
         const query = `
-            SELECT * FROM invites
+            SELECT * FROM groupinvites
             WHERE status = ?
         `;
         const [rows] = await database_1.default.query(query, [status]);

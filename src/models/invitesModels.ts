@@ -97,7 +97,7 @@ export const declineInviteQuery = async (inviteId: string) => {
 export const getInviteByIdQuery = async (id: number) => {
     try {
         const query = `
-            SELECT * FROM invites
+            SELECT * FROM groupinvites
             WHERE id = ?
         `;
         const [rows] = await db.query(query, [id]);
@@ -111,7 +111,7 @@ export const getInviteByIdQuery = async (id: number) => {
 export const getInvitesForGroupQuery = async (groupId: number) => {
     try {
         const query = `
-            SELECT * FROM invites
+            SELECT * FROM groupinvites
             WHERE groupId = ?
         `;
         const [rows] = await db.query(query, [groupId]);
@@ -125,7 +125,7 @@ export const getInvitesForGroupQuery = async (groupId: number) => {
 export const getInvitesForUserQuery = async (id: number) => {
     try {
         const query = `
-            SELECT * FROM invites
+            SELECT * FROM groupinvites
             WHERE invitee = ?
         `;
         const [rows] = await db.query(query, [id]);
@@ -139,7 +139,7 @@ export const getInvitesForUserQuery = async (id: number) => {
 export const getInvitesSentByUserQuery = async (id: number) => {
     try {
         const query = `
-            SELECT * FROM invites
+            SELECT * FROM groupinvites
             WHERE inviter = ?
         `;
         const [rows] = await db.query(query, [id]);
@@ -153,7 +153,7 @@ export const getInvitesSentByUserQuery = async (id: number) => {
 export const getInvitesByStatusQuery = async (status: string) => {
     try {
         const query = `
-            SELECT * FROM invites
+            SELECT * FROM groupinvites
             WHERE status = ?
         `;
         const [rows] = await db.query(query, [status]);
