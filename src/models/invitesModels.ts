@@ -71,7 +71,7 @@ export const acceptInviteQuery = async (inviteId: string) => {
 export const declineInviteQuery = async (inviteId: number) => {
     try {
         const query = `
-            UPDATE invites
+            UPDATE groupinvites
             SET status = 'DECLINED'
             WHERE id = ?
         `;
