@@ -31,10 +31,11 @@ export const getInvitesForUser = (req: any, res: any) => {
 export const sendInviteTo = async (req: any, res: any) => {
 
     const { invitedBy, invitee, invitedTo } = req.body;
+    const id = uuidv4();
     console.log('sendInviteTo');
     try {
-        const rows = await sendInviteToQuery(invitedBy, invitee, invitedTo);
-        res.status(201).send({ success: true, rows });
+        const rows = await sendInviteToQuery(id, invitedBy, invitee, invitedTo);
+        res.status(201).send({ id, success: true, rows });
     } catch (error) {
         console.error('Error sending invite:', error);
         res.status(500).send({ error: 'Internal Server Error' });
