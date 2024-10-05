@@ -62,7 +62,7 @@ scoreByMember, status = 'inactive') => {
             throw new Error('Group not found');
         }
         // Assuming memberIds is a JSON array of member IDs
-        const groupMemberIds = groupRows[0].memberIds || [];
+        const groupMemberIds = groupRows[0].membersIds || [];
         // Combine the group members and the explicitly passed attendees
         const allAttendees = [...new Set([...groupMemberIds, ...attendees])];
         // Insert the event

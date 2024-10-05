@@ -69,7 +69,7 @@ export const createEventQuery = async (
         }
 
         // Assuming memberIds is a JSON array of member IDs
-        const groupMemberIds = (groupRows[0] as any).memberIds || [];
+        const groupMemberIds = (groupRows[0] as any).membersIds || [];
 
         // Combine the group members and the explicitly passed attendees
         const allAttendees = [...new Set([...groupMemberIds, ...attendees])];
