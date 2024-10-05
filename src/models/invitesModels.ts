@@ -68,20 +68,31 @@ export const acceptInviteQuery = async (inviteId: string) => {
 }
 
 
-export const declineInviteQuery = async (inviteId: number) => {
+export const declineInviteQuery = async (inviteId: string) => {
     try {
-        const query = `
+        const updateQuery = `
             UPDATE groupinvites
             SET status = 'REJECTED'
             WHERE ID = ?
         `;
-        const [result] = await db.query(query, [inviteId]);
-        return result;
+        const deleteQuery = `
+            DELETE FROM groupinvites
+            WHERE ID = ?
+        `;
+
+        const [updateResult]: any = await db.query(updateQuery, [inviteId]);
+
+
+        if (updateResult.affectedRows > 0) {
+            await db.query(deleteQuery, [inviteId]);
+        }
+
+        return updateResult;
     } catch (error) {
-        console.error('Error declining invite:', error);
+        console.error('Error rejecting invite:', error);
         throw error;
     }
-}
+};
 
 export const getInviteByIdQuery = async (id: number) => {
     try {
