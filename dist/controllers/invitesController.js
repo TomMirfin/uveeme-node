@@ -43,7 +43,7 @@ const acceptInvite = async (req, res) => {
     console.log('acceptInvite');
     try {
         const rows = await (0, invitesModels_1.acceptInviteQuery)(inviteId);
-        res.status(200).send(rows);
+        res.status(200).send({ inviteId, success: true, rows });
     }
     catch (error) {
         console.error('Error accepting invite:', error);

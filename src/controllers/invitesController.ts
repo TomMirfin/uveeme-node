@@ -46,7 +46,7 @@ export const acceptInvite = async (req: any, res: any) => {
     console.log('acceptInvite');
     try {
         const rows = await acceptInviteQuery(inviteId);
-        res.status(200).send(rows);
+        res.status(200).send({ inviteId, success: true, rows });
     } catch (error) {
         console.error('Error accepting invite:', error);
         res.status(500).send({ error: 'Internal Server Error' });
