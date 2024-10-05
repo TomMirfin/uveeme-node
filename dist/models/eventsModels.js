@@ -111,9 +111,9 @@ scoreByMember, status = 'inactive') => {
     }
 };
 exports.createEventQuery = createEventQuery;
-const alterEventQuery = async (id, name, description, startDate, endDate, location, attendeesToRemove = [], scoreByMember // New optional parameter for score updates
+const alterEventQuery = async (id, name, description, startDate, endDate, location, attendeesToRemove = [], scoreByMember // New parameter for scores
 ) => {
-    let queryParts = [];
+    let fieldsToUpdate = [];
     let values = [];
     // Fetch current attendees if attendeesToRemove is provided
     let currentAttendees = [];
@@ -122,43 +122,44 @@ const alterEventQuery = async (id, name, description, startDate, endDate, locati
         currentAttendees = JSON.parse(rows[0]?.attendees || '[]');
         // Filter out the users to remove from attendees
         currentAttendees = currentAttendees.filter((userId) => !attendeesToRemove.includes(userId));
-        queryParts.push(`attendees = ?`);
-        values.push(JSON.stringify(currentAttendees));
+        values.push(JSON.stringify(currentAttendees)); // Will be used for attendees update
+        fieldsToUpdate.push(`attendees = ?`);
     }
-    // Dynamically construct the update query
+    // Construct fields to update based on provided values
     if (name) {
-        queryParts.push(`name = ?`);
+        fieldsToUpdate.push(`name = ?`);
         values.push(name);
     }
     if (description) {
-        queryParts.push(`description = ?`);
+        fieldsToUpdate.push(`description = ?`);
         values.push(description);
     }
     if (startDate) {
-        queryParts.push(`startDate = ?`);
+        fieldsToUpdate.push(`startDate = ?`);
         values.push(startDate);
     }
     if (endDate) {
-        queryParts.push(`endDate = ?`);
+        fieldsToUpdate.push(`endDate = ?`);
         values.push(endDate);
     }
     if (location) {
-        queryParts.push(`location = ?`);
+        fieldsToUpdate.push(`location = ?`);
         values.push(location);
     }
-    // If there are no fields to update, throw an error
-    if (queryParts.length === 0) {
+    // Include scoreByMember updates if provided
+    if (scoreByMember) {
+        fieldsToUpdate.push(`scoreByMember = ?`);
+        values.push(JSON.stringify(scoreByMember)); // Convert scoreByMember to JSON
+    }
+    // If no fields to update, throw an error
+    if (fieldsToUpdate.length === 0) {
         throw new Error('No fields to update');
     }
-    // Construct the full SQL query
-    const query = `UPDATE events SET ${queryParts.join(', ')} WHERE id = ?`;
-    values.push(id);
+    // Construct the final query
+    const query = `UPDATE events SET ${fieldsToUpdate.join(', ')} WHERE id = ?`;
+    values.push(id); // Add id to the end of values array
     try {
         const [result] = await database_1.default.query(query, values);
-        // If scoreByMember is provided, update it as well
-        if (scoreByMember) {
-            await updateEventScores(id, scoreByMember);
-        }
         return result;
     }
     catch (error) {
