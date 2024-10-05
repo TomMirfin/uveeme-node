@@ -21,7 +21,7 @@ export const sendInviteToQuery = async (inviter: string, invitee: string, groupI
     const id = uuidv4();
 
     const query = `
-        INSERT INTO groupinvites (id, inviter, invitee, invitedTo, status, notificationSent)
+        INSERT INTO groupinvites (id, invitedBy, invitee, invitedTo, status, notificationSent)
         VALUES (?, ?, ?, ?, ?, ?)
     `;
 
