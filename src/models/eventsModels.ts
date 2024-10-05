@@ -173,10 +173,28 @@ export const alterEventQuery = async (
         values.push(location);
     }
 
-    // Include scoreByMember updates if provided and valid
-    if (Array.isArray(scoreByMember) && scoreByMember.length > 0) {
+    // Include scoreByMember updates if provided
+    if (scoreByMember && Array.isArray(scoreByMember)) {
+        // Fetch current scores for this event
+        const [currentScoresRows]: any = await db.query(`SELECT scoreByMember FROM events WHERE id = ?`, [id]);
+        const currentScores: { memberId: string; score: number }[] = JSON.parse(currentScoresRows[0]?.scoreByMember || '[]');
+
+        // Update scores based on provided data
+        scoreByMember.forEach(({ memberId, score }) => {
+            // Check if the member already has a score
+            const existingScoreIndex = currentScores.findIndex((s: { memberId: string; score: number }) => s.memberId === memberId);
+            if (existingScoreIndex >= 0) {
+                // If the score exists, add the new score to the existing one
+                currentScores[existingScoreIndex].score += score;
+            } else {
+                // If the score does not exist, add a new entry
+                currentScores.push({ memberId, score });
+            }
+        });
+
+        // Push the updated scores to the fieldsToUpdate
         fieldsToUpdate.push(`scoreByMember = ?`);
-        values.push(JSON.stringify(scoreByMember)); // Convert scoreByMember to JSON
+        values.push(JSON.stringify(currentScores)); // Convert updated scores to JSON
     }
 
     // If no fields to update, throw an error
@@ -194,6 +212,40 @@ export const alterEventQuery = async (
     } catch (error) {
         console.error('Error updating event:', error);
         throw error;
+    }
+};
+
+export const alterEvent = async (req: any, res: any, next: any) => {
+    console.log('Request Body:', req.body);
+
+    try {
+        const {
+            id,
+            name,
+            description,
+            startDate,
+            endDate,
+            location,
+            attendeesToRemove = [], // Rename to be clear
+            scoreByMember,
+        } = req.body;
+
+        // Call the query function with optional parameters
+        const rows = await alterEventQuery(
+            id,
+            name,
+            description,
+            startDate,
+            endDate,
+            location,
+            attendeesToRemove,
+            scoreByMember
+        );
+
+        res.status(200).send({ message: 'Event updated successfully', rows });
+    } catch (error) {
+        console.error('Error updating event:', error);
+        res.status(500).send({ error: 'Internal Server Error', details: error.message }); // More informative response
     }
 };
 
