@@ -17,6 +17,7 @@ export const getAllInvitesQuery = async (id: number) => {
 
 export const sendInviteToQuery = async (inviter: string, invitee: string, groupId: string) => {
     const status = 'PENDING';
+    const notificationSent = true;
     const id = uuidv4();
 
     try {
@@ -31,11 +32,11 @@ export const sendInviteToQuery = async (inviter: string, invitee: string, groupI
         }
 
         const query = `
-            INSERT INTO groupinvites (id, inviter, invitee, invitedTo, status)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO groupinvites (id, inviter, invitee, invitedTo, status, notificationSent)
+            VALUES (?, ?, ?, ?, ?, ?)
             
         `;
-        const [result] = await db.query(query, [id, inviter, invitee, groupId, status]);
+        const [result] = await db.query(query, [id, inviter, invitee, groupId, status, notificationSent]);
         return result;
     } catch (error) {
         console.error('Error sending invite:', error);
