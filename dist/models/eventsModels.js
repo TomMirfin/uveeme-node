@@ -37,10 +37,10 @@ const getEventsForGroupQuery = async (groupId) => {
     }
 };
 exports.getEventsForGroupQuery = getEventsForGroupQuery;
-const createEventQuery = async (name, description, fromGroup, location, startDate, endDate, attendees, scoreByMember = [], // Optional
-status = 'inactive') => {
+const createEventQuery = async (name, description, fromGroup, // groupId
+location, startDate, endDate, attendees, // Attendees passed explicitly
+scoreByMember, status = 'inactive') => {
     const id = (0, uuid_1.v4)();
-    const scoreIds = []; // Array to store the IDs of scorebyevent entries
     // Validate that startDate and endDate are valid Date objects
     if (!(startDate instanceof Date) || isNaN(startDate.getTime())) {
         throw new Error("Invalid start date");
@@ -51,51 +51,45 @@ status = 'inactive') => {
     // Format dates to YYYY-MM-DD
     const formattedStartDate = (0, moment_1.default)(startDate).format('YYYY-MM-DD');
     const formattedEndDate = (0, moment_1.default)(endDate).format('YYYY-MM-DD');
-    const query = `
-        INSERT INTO events (id, name, description, fromGroup, startDate, endDate, location, attendees, scoreByMember, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-    const values = [
-        id,
-        name,
-        description,
-        fromGroup,
-        formattedStartDate, // Use formatted dates here
-        formattedEndDate,
-        location,
-        JSON.stringify(attendees),
-        JSON.stringify(scoreByMember), // This can be an empty array if no scores are provided initially
-        status
-    ];
     try {
-        // Insert the event
-        await database_1.default.query(query, values);
-        // Fetch all member IDs from the group to insert into scorebyevent table
-        const membersQuery = `SELECT memberId FROM groupmembers WHERE groupId = ?`; // Adjust the table and column names as per your schema
-        const [membersRows] = await database_1.default.query(membersQuery, [fromGroup]);
-        const members = Array.isArray(membersRows) ? membersRows : [];
-        // Create score entries for each member in scorebyevent table
-        for (const member of members) {
-            const scoreId = (0, uuid_1.v4)(); // Generate a unique ID for each score entry
-            const score = 0; // Set default score to 0 or any default value you prefer
-            // Use INSERT ... ON DUPLICATE KEY UPDATE to ensure up-to-date scores
-            await database_1.default.query(`
-                INSERT INTO scorebyevent (id, eventId, memberId, score)
-                VALUES (?, ?, ?, ?)
-                ON DUPLICATE KEY UPDATE score = VALUES(score);
-            `, [scoreId, id, member.memberId, score]); // Assuming memberId is available in the returned member object
-            scoreIds.push(scoreId); // Store the score ID
+        // Fetch the group member IDs from the groups table
+        const groupQuery = `
+            SELECT membersIds FROM \`groups\`
+            WHERE id = ?
+        `;
+        const [groupRows] = await database_1.default.query(groupQuery, [fromGroup]);
+        if (!Array.isArray(groupRows) || groupRows.length === 0) {
+            throw new Error('Group not found');
         }
-        // Insert or update scores for the provided members
+        // Assuming memberIds is a JSON array of member IDs
+        const groupMemberIds = groupRows[0].membersIds || [];
+        // Combine the group members and the explicitly passed attendees
+        const allAttendees = [...new Set([...groupMemberIds, ...attendees])];
+        // Insert the event
+        const eventQuery = `
+            INSERT INTO events (id, name, description, fromGroup, startDate, endDate, location, attendees, scoreByMember, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+        const eventValues = [
+            id,
+            name,
+            description,
+            fromGroup,
+            formattedStartDate, // Use formatted dates here
+            formattedEndDate,
+            location,
+            JSON.stringify(allAttendees), // Store all attendees as JSON
+            JSON.stringify(scoreByMember),
+            status
+        ];
+        await database_1.default.query(eventQuery, eventValues);
+        // Insert default scores into scorebyevent table
         for (const { memberId, score } of scoreByMember) {
-            const scoreId = (0, uuid_1.v4)(); // Generate a unique ID for the provided score
-            // Use INSERT ... ON DUPLICATE KEY UPDATE to ensure up-to-date scores
             await database_1.default.query(`
-                INSERT INTO scorebyevent (id, eventId, memberId, score)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO scorebyevent (eventId, memberId, score)
+                VALUES (?, ?, ?)
                 ON DUPLICATE KEY UPDATE score = VALUES(score);
-            `, [scoreId, id, memberId, score]);
-            scoreIds.push(scoreId); // Store the score ID
+            `, [id, memberId, score]);
         }
         // Update the scoreByMember field in the events table
         await database_1.default.query(`
@@ -109,8 +103,7 @@ status = 'inactive') => {
             )
             WHERE id = ?;
         `, [id, id]);
-        // Return the event ID and the score IDs
-        return { eventId: id, scoreIds }; // Return both IDs
+        return { id };
     }
     catch (error) {
         console.error('Error creating event:', error);
@@ -118,8 +111,9 @@ status = 'inactive') => {
     }
 };
 exports.createEventQuery = createEventQuery;
-const alterEventQuery = async (id, name, description, startDate, endDate, location, attendeesToRemove = []) => {
-    let query;
+const alterEventQuery = async (id, name, description, startDate, endDate, location, attendeesToRemove = [], scoreByMember // New optional parameter for score updates
+) => {
+    let queryParts = [];
     let values = [];
     // Fetch current attendees if attendeesToRemove is provided
     let currentAttendees = [];
@@ -127,40 +121,44 @@ const alterEventQuery = async (id, name, description, startDate, endDate, locati
         const [rows] = await database_1.default.query(`SELECT attendees FROM events WHERE id = ?`, [id]);
         currentAttendees = JSON.parse(rows[0]?.attendees || '[]');
         // Filter out the users to remove from attendees
-        const updatedAttendees = currentAttendees.filter((userId) => !attendeesToRemove.includes(userId));
-        values.push(JSON.stringify(updatedAttendees));
+        currentAttendees = currentAttendees.filter((userId) => !attendeesToRemove.includes(userId));
+        queryParts.push(`attendees = ?`);
+        values.push(JSON.stringify(currentAttendees));
     }
-    // Construct query based on the fields provided
-    if (name && description && startDate && endDate && location) {
-        query = `UPDATE events SET name = ?, description = ?, startDate = ?, endDate = ?, location = ?, attendees = ? WHERE id = ?`;
-        values = [name, description, startDate, endDate, location, JSON.stringify(currentAttendees), id];
+    // Dynamically construct the update query
+    if (name) {
+        queryParts.push(`name = ?`);
+        values.push(name);
     }
-    else if (!name) {
-        query = `UPDATE events SET description = ?, startDate = ?, endDate = ?, location = ?, attendees = ? WHERE id = ?`;
-        values = [description, startDate, endDate, location, JSON.stringify(currentAttendees), id];
+    if (description) {
+        queryParts.push(`description = ?`);
+        values.push(description);
     }
-    else if (!description) {
-        query = `UPDATE events SET name = ?, startDate = ?, endDate = ?, location = ?, attendees = ? WHERE id = ?`;
-        values = [name, startDate, endDate, location, JSON.stringify(currentAttendees), id];
+    if (startDate) {
+        queryParts.push(`startDate = ?`);
+        values.push(startDate);
     }
-    else if (!startDate) {
-        query = `UPDATE events SET name = ?, description = ?, endDate = ?, location = ?, attendees = ? WHERE id = ?`;
-        values = [name, description, endDate, location, JSON.stringify(currentAttendees), id];
+    if (endDate) {
+        queryParts.push(`endDate = ?`);
+        values.push(endDate);
     }
-    else if (!endDate) {
-        query = `UPDATE events SET name = ?, description = ?, startDate = ?, location = ?, attendees = ? WHERE id = ?`;
-        values = [name, description, startDate, location, JSON.stringify(currentAttendees), id];
+    if (location) {
+        queryParts.push(`location = ?`);
+        values.push(location);
     }
-    else if (!location) {
-        query = `UPDATE events SET name = ?, description = ?, startDate = ?, endDate = ?, attendees = ? WHERE id = ?`;
-        values = [name, description, startDate, endDate, JSON.stringify(currentAttendees), id];
+    // If there are no fields to update, throw an error
+    if (queryParts.length === 0) {
+        throw new Error('No fields to update');
     }
-    else if (attendeesToRemove.length > 0) {
-        query = `UPDATE events SET attendees = ? WHERE id = ?`;
-        values = [JSON.stringify(currentAttendees), id];
-    }
+    // Construct the full SQL query
+    const query = `UPDATE events SET ${queryParts.join(', ')} WHERE id = ?`;
+    values.push(id);
     try {
         const [result] = await database_1.default.query(query, values);
+        // If scoreByMember is provided, update it as well
+        if (scoreByMember) {
+            await updateEventScores(id, scoreByMember);
+        }
         return result;
     }
     catch (error) {
@@ -169,6 +167,15 @@ const alterEventQuery = async (id, name, description, startDate, endDate, locati
     }
 };
 exports.alterEventQuery = alterEventQuery;
+// Helper function to update scores
+const updateEventScores = async (eventId, scoreByMember) => {
+    const scoreUpdates = scoreByMember.map(({ memberId, score }) => database_1.default.query(`
+            INSERT INTO scorebyevent (eventId, memberId, score)
+            VALUES (?, ?, ?)
+            ON DUPLICATE KEY UPDATE score = VALUES(score);
+        `, [eventId, memberId, score]));
+    await Promise.all(scoreUpdates);
+};
 const deleteEventQuery = async (id) => {
     const query = `
         DELETE FROM events

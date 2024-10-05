@@ -31,20 +31,18 @@ export const getEventsForGroupQuery = async (groupId: number) => {
 }
 
 
-
 export const createEventQuery = async (
     name: string,
     description: string,
-    fromGroup: string,
+    fromGroup: string, // groupId
     location: string,
     startDate: Date,
     endDate: Date,
-    attendees: string[],
-    scoreByMember: { memberId: string, score: number }[] = [], // Optional
+    attendees: string[], // Attendees passed explicitly
+    scoreByMember: { memberId: string, score: number }[],
     status: string = 'inactive'
 ) => {
     const id = uuidv4();
-    const scoreIds = []; // Array to store the IDs of scorebyevent entries
 
     // Validate that startDate and endDate are valid Date objects
     if (!(startDate instanceof Date) || isNaN(startDate.getTime())) {
@@ -58,59 +56,51 @@ export const createEventQuery = async (
     const formattedStartDate = moment(startDate).format('YYYY-MM-DD');
     const formattedEndDate = moment(endDate).format('YYYY-MM-DD');
 
-    const query = `
-        INSERT INTO events (id, name, description, fromGroup, startDate, endDate, location, attendees, scoreByMember, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-    const values = [
-        id,
-        name,
-        description,
-        fromGroup,
-        formattedStartDate, // Use formatted dates here
-        formattedEndDate,
-        location,
-        JSON.stringify(attendees),
-        JSON.stringify(scoreByMember), // This can be an empty array if no scores are provided initially
-        status
-    ];
-
     try {
-        // Insert the event
-        await db.query(query, values);
+        // Fetch the group member IDs from the groups table
+        const groupQuery = `
+            SELECT membersIds FROM \`groups\`
+            WHERE id = ?
+        `;
+        const [groupRows]: any = await db.query(groupQuery, [fromGroup]);
 
-        // Fetch all member IDs from the group to insert into scorebyevent table
-        const membersQuery = `SELECT memberId FROM groupmembers WHERE groupId = ?`; // Adjust the table and column names as per your schema
-        const [membersRows] = await db.query(membersQuery, [fromGroup]);
-        const members = Array.isArray(membersRows) ? membersRows : [];
-
-        // Create score entries for each member in scorebyevent table
-        for (const member of members as any) {
-            const scoreId = uuidv4(); // Generate a unique ID for each score entry
-            const score = 0; // Set default score to 0 or any default value you prefer
-
-            // Use INSERT ... ON DUPLICATE KEY UPDATE to ensure up-to-date scores
-            await db.query(`
-                INSERT INTO scorebyevent (id, eventId, memberId, score)
-                VALUES (?, ?, ?, ?)
-                ON DUPLICATE KEY UPDATE score = VALUES(score);
-            `, [scoreId, id, member.memberId, score]); // Assuming memberId is available in the returned member object
-
-            scoreIds.push(scoreId); // Store the score ID
+        if (!Array.isArray(groupRows) || groupRows.length === 0) {
+            throw new Error('Group not found');
         }
 
-        // Insert or update scores for the provided members
+        // Assuming memberIds is a JSON array of member IDs
+        const groupMemberIds = (groupRows[0] as any).membersIds || [];
+
+        // Combine the group members and the explicitly passed attendees
+        const allAttendees = [...new Set([...groupMemberIds, ...attendees])];
+
+        // Insert the event
+        const eventQuery = `
+            INSERT INTO events (id, name, description, fromGroup, startDate, endDate, location, attendees, scoreByMember, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+        const eventValues = [
+            id,
+            name,
+            description,
+            fromGroup,
+            formattedStartDate, // Use formatted dates here
+            formattedEndDate,
+            location,
+            JSON.stringify(allAttendees), // Store all attendees as JSON
+            JSON.stringify(scoreByMember),
+            status
+        ];
+
+        await db.query(eventQuery, eventValues);
+
+        // Insert default scores into scorebyevent table
         for (const { memberId, score } of scoreByMember) {
-            const scoreId = uuidv4(); // Generate a unique ID for the provided score
-
-            // Use INSERT ... ON DUPLICATE KEY UPDATE to ensure up-to-date scores
             await db.query(`
-                INSERT INTO scorebyevent (id, eventId, memberId, score)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO scorebyevent (eventId, memberId, score)
+                VALUES (?, ?, ?)
                 ON DUPLICATE KEY UPDATE score = VALUES(score);
-            `, [scoreId, id, memberId, score]);
-
-            scoreIds.push(scoreId); // Store the score ID
+            `, [id, memberId, score]);
         }
 
         // Update the scoreByMember field in the events table
@@ -126,8 +116,7 @@ export const createEventQuery = async (
             WHERE id = ?;
         `, [id, id]);
 
-        // Return the event ID and the score IDs
-        return { eventId: id, scoreIds }; // Return both IDs
+        return { id };
     } catch (error) {
         console.error('Error creating event:', error);
         throw error;
@@ -144,9 +133,10 @@ export const alterEventQuery = async (
     startDate?: string,
     endDate?: string,
     location?: string,
-    attendeesToRemove: string[] = []
+    attendeesToRemove: string[] = [],
+    scoreByMember?: { memberId: string; score: number }[] // New optional parameter for score updates
 ) => {
-    let query;
+    let queryParts: string[] = [];
     let values: any[] = [];
 
     // Fetch current attendees if attendeesToRemove is provided
@@ -156,43 +146,70 @@ export const alterEventQuery = async (
         currentAttendees = JSON.parse(rows[0]?.attendees || '[]');
 
         // Filter out the users to remove from attendees
-        const updatedAttendees = currentAttendees.filter((userId: string) => !attendeesToRemove.includes(userId));
-
-        values.push(JSON.stringify(updatedAttendees));
+        currentAttendees = currentAttendees.filter((userId: string) => !attendeesToRemove.includes(userId));
+        queryParts.push(`attendees = ?`);
+        values.push(JSON.stringify(currentAttendees));
     }
 
-    // Construct query based on the fields provided
-    if (name && description && startDate && endDate && location) {
-        query = `UPDATE events SET name = ?, description = ?, startDate = ?, endDate = ?, location = ?, attendees = ? WHERE id = ?`;
-        values = [name, description, startDate, endDate, location, JSON.stringify(currentAttendees), id];
-    } else if (!name) {
-        query = `UPDATE events SET description = ?, startDate = ?, endDate = ?, location = ?, attendees = ? WHERE id = ?`;
-        values = [description, startDate, endDate, location, JSON.stringify(currentAttendees), id];
-    } else if (!description) {
-        query = `UPDATE events SET name = ?, startDate = ?, endDate = ?, location = ?, attendees = ? WHERE id = ?`;
-        values = [name, startDate, endDate, location, JSON.stringify(currentAttendees), id];
-    } else if (!startDate) {
-        query = `UPDATE events SET name = ?, description = ?, endDate = ?, location = ?, attendees = ? WHERE id = ?`;
-        values = [name, description, endDate, location, JSON.stringify(currentAttendees), id];
-    } else if (!endDate) {
-        query = `UPDATE events SET name = ?, description = ?, startDate = ?, location = ?, attendees = ? WHERE id = ?`;
-        values = [name, description, startDate, location, JSON.stringify(currentAttendees), id];
-    } else if (!location) {
-        query = `UPDATE events SET name = ?, description = ?, startDate = ?, endDate = ?, attendees = ? WHERE id = ?`;
-        values = [name, description, startDate, endDate, JSON.stringify(currentAttendees), id];
-    } else if (attendeesToRemove.length > 0) {
-        query = `UPDATE events SET attendees = ? WHERE id = ?`;
-        values = [JSON.stringify(currentAttendees), id];
+    // Dynamically construct the update query
+    if (name) {
+        queryParts.push(`name = ?`);
+        values.push(name);
     }
+    if (description) {
+        queryParts.push(`description = ?`);
+        values.push(description);
+    }
+    if (startDate) {
+        queryParts.push(`startDate = ?`);
+        values.push(startDate);
+    }
+    if (endDate) {
+        queryParts.push(`endDate = ?`);
+        values.push(endDate);
+    }
+    if (location) {
+        queryParts.push(`location = ?`);
+        values.push(location);
+    }
+
+    // If there are no fields to update, throw an error
+    if (queryParts.length === 0) {
+        throw new Error('No fields to update');
+    }
+
+    // Construct the full SQL query
+    const query = `UPDATE events SET ${queryParts.join(', ')} WHERE id = ?`;
+    values.push(id);
 
     try {
-        const [result] = await db.query(query as string, values);
+        const [result] = await db.query(query, values);
+
+        // If scoreByMember is provided, update it as well
+        if (scoreByMember) {
+            await updateEventScores(id, scoreByMember);
+        }
+
         return result;
     } catch (error) {
         console.error('Error updating event:', error);
         throw error;
     }
 };
+
+// Helper function to update scores
+const updateEventScores = async (eventId: string, scoreByMember: { memberId: string; score: number }[]) => {
+    const scoreUpdates = scoreByMember.map(({ memberId, score }) =>
+        db.query(`
+            INSERT INTO scorebyevent (eventId, memberId, score)
+            VALUES (?, ?, ?)
+            ON DUPLICATE KEY UPDATE score = VALUES(score);
+        `, [eventId, memberId, score])
+    );
+
+    await Promise.all(scoreUpdates);
+};
+
 
 
 export const deleteEventQuery = async (id: number) => {
