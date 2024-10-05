@@ -17,7 +17,7 @@ export const getAllInvitesQuery = async (id: number) => {
 
 export const sendInviteToQuery = async (inviter: string, invitee: string, groupId: string) => {
     const status = 'PENDING';
-    const notificationSent = true;
+    const notificationSent = 1
     const id = uuidv4();
 
     const query = `

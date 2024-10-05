@@ -26,7 +26,7 @@ const getInvitesForUser = (req, res) => {
 };
 exports.getInvitesForUser = getInvitesForUser;
 const sendInviteTo = async (req, res) => {
-    const { inviter, invitee, groupId, status, notificationSent } = req.body;
+    const { inviter, invitee, groupId } = req.body;
     console.log('sendInviteTo');
     try {
         const rows = await (0, invitesModels_1.sendInviteToQuery)(inviter, invitee, groupId);
