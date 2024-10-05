@@ -59,17 +59,17 @@ export const createEventQuery = async (
     try {
         // Fetch the group member IDs from the groups table
         const groupQuery = `
-            SELECT memberIds FROM groups
+            SELECT memberIds FROM \`groups\`
             WHERE id = ?
         `;
-        const [groupRows] = await db.query(groupQuery, [fromGroup]);
+        const [groupRows]: any = await db.query(groupQuery, [fromGroup]);
 
-        if (groupRows.length === 0) {
+        if (!Array.isArray(groupRows) || groupRows.length === 0) {
             throw new Error('Group not found');
         }
 
         // Assuming memberIds is a JSON array of member IDs
-        const groupMemberIds = groupRows[0].memberIds || [];
+        const groupMemberIds = (groupRows[0] as any).memberIds || [];
 
         // Combine the group members and the explicitly passed attendees
         const allAttendees = [...new Set([...groupMemberIds, ...attendees])];
