@@ -1,4 +1,6 @@
 import { getAllInvitesQuery, sendInviteToQuery, acceptInviteQuery, declineInviteQuery, getInviteByIdQuery, getInvitesForGroupQuery, getInvitesSentByUserQuery, getInvitesByStatusQuery } from "../models/invitesModels";
+
+import { v4 as uuidv4 } from 'uuid';
 /* DELIMITER $$
 
 CREATE TRIGGER after_invite_accepted
@@ -27,11 +29,12 @@ export const getInvitesForUser = (req: any, res: any) => {
 
 
 export const sendInviteTo = async (req: any, res: any) => {
+    const id = uuidv4();
     const { inviter, invitee, groupId } = req.body;
     console.log('sendInviteTo');
     try {
         const rows = await sendInviteToQuery(inviter, invitee, groupId);
-        res.status(201).send(rows);
+        res.status(201).send({ success: true, rows });
     } catch (error) {
         console.error('Error sending invite:', error);
         res.status(500).send({ error: 'Internal Server Error' });
