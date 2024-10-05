@@ -54,7 +54,7 @@ scoreByMember, status = 'inactive') => {
     try {
         // Fetch the group member IDs from the groups table
         const groupQuery = `
-            SELECT memberIds FROM \`groups\`
+            SELECT membersIds FROM \`groups\`
             WHERE id = ?
         `;
         const [groupRows] = await database_1.default.query(groupQuery, [fromGroup]);

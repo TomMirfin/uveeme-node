@@ -59,7 +59,7 @@ export const createEventQuery = async (
     try {
         // Fetch the group member IDs from the groups table
         const groupQuery = `
-            SELECT memberIds FROM \`groups\`
+            SELECT membersIds FROM \`groups\`
             WHERE id = ?
         `;
         const [groupRows]: any = await db.query(groupQuery, [fromGroup]);
