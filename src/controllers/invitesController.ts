@@ -29,7 +29,7 @@ export const getInvitesForUser = (req: any, res: any) => {
 
 
 export const sendInviteTo = async (req: any, res: any) => {
-    const id = uuidv4();
+
     const { inviter, invitee, groupId } = req.body;
     console.log('sendInviteTo');
     try {

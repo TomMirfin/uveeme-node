@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getInvitesByStatusQuery = exports.getInvitesSentByUserQuery = exports.getInvitesForUserQuery = exports.getInvitesForGroupQuery = exports.getInviteByIdQuery = exports.declineInviteQuery = exports.acceptInviteQuery = exports.sendInviteToQuery = exports.getAllInvitesQuery = void 0;
 const database_1 = __importDefault(require("../database"));
+const uuid_1 = require("uuid");
 const getAllInvitesQuery = async (id) => {
     try {
         const query = `
@@ -23,6 +24,7 @@ exports.getAllInvitesQuery = getAllInvitesQuery;
 const sendInviteToQuery = async (inviter, invitee, groupId) => {
     const status = 'PENDING';
     const notificationSent = 1;
+    const id = (0, uuid_1.v4)();
     const query = `
         INSERT INTO groupinvites (id, inviter, invitee, invitedTo, status, notificationSent)
         VALUES (?, ?, ?, ?, ?, ?)

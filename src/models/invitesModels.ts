@@ -18,7 +18,7 @@ export const getAllInvitesQuery = async (id: number) => {
 export const sendInviteToQuery = async (inviter: string, invitee: string, groupId: string) => {
     const status = 'PENDING';
     const notificationSent = 1
-
+    const id = uuidv4();
 
     const query = `
         INSERT INTO groupinvites (id, inviter, invitee, invitedTo, status, notificationSent)

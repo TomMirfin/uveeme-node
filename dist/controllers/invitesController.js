@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getInvitesByStatus = exports.getInvitesSentByUser = exports.getInvitesForGroup = exports.getInviteById = exports.declineInvite = exports.acceptInvite = exports.sendInviteTo = exports.getInvitesForUser = void 0;
 const invitesModels_1 = require("../models/invitesModels");
-const uuid_1 = require("uuid");
 /* DELIMITER $$
 
 CREATE TRIGGER after_invite_accepted
@@ -27,7 +26,6 @@ const getInvitesForUser = (req, res) => {
 };
 exports.getInvitesForUser = getInvitesForUser;
 const sendInviteTo = async (req, res) => {
-    const id = (0, uuid_1.v4)();
     const { inviter, invitee, groupId } = req.body;
     console.log('sendInviteTo');
     try {
