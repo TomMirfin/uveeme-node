@@ -31,7 +31,7 @@ export const sendInviteToQuery = async (inviter: string, invitee: string, groupI
         }
 
         const query = `
-            INSERT INTO groupinvites (id, inviter, invitee, groupId, status)
+            INSERT INTO groupinvites (id, inviter, invitee, invitedTo, status)
             VALUES (?, ?, ?, ?, ?)
             
         `;

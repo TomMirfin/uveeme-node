@@ -34,7 +34,7 @@ const sendInviteToQuery = async (inviter, invitee, groupId) => {
             return null;
         }
         const query = `
-            INSERT INTO groupinvites (id, inviter, invitee, groupId, status)
+            INSERT INTO groupinvites (id, inviter, invitee, invitedTo, status)
             VALUES (?, ?, ?, ?, ?)
             
         `;
