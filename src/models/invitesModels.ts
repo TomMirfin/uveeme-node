@@ -20,12 +20,12 @@ export const sendInviteToQuery = async (inviter: string, invitee: string, groupI
     const id = uuidv4();
 
     try {
-        const [inviteeRows] = await db.query('SELECT * FROM `groups` WHERE invitee = ?', [invitee]);
+        const [inviteeRows] = await db.query('SELECT * FROM users WHERE id = ?', [invitee]);
         if (inviteeRows) {
             return null
         }
 
-        const [inviterRows] = await db.query('SELECT * FROM `groups` WHERE inviter = ?', [inviter]);
+        const [inviterRows] = await db.query('SELECT * FROM `groups` WHERE memberIds = ?', [inviter]);
         if (!inviterRows) {
             return null
         }

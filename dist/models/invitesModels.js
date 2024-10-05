@@ -25,11 +25,11 @@ const sendInviteToQuery = async (inviter, invitee, groupId) => {
     const status = 'PENDING';
     const id = (0, uuid_1.v4)();
     try {
-        const [inviteeRows] = await database_1.default.query('SELECT * FROM `groups` WHERE invitee = ?', [invitee]);
+        const [inviteeRows] = await database_1.default.query('SELECT * FROM users WHERE id = ?', [invitee]);
         if (inviteeRows) {
             return null;
         }
-        const [inviterRows] = await database_1.default.query('SELECT * FROM `groups` WHERE inviter = ?', [inviter]);
+        const [inviterRows] = await database_1.default.query('SELECT * FROM `groups` WHERE memberIds = ?', [inviter]);
         if (!inviterRows) {
             return null;
         }
