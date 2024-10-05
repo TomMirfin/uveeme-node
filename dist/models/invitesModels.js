@@ -25,20 +25,11 @@ const sendInviteToQuery = async (inviter, invitee, groupId) => {
     const status = 'PENDING';
     const notificationSent = true;
     const id = (0, uuid_1.v4)();
+    const query = `
+        INSERT INTO groupinvites (id, inviter, invitee, invitedTo, status, notificationSent)
+        VALUES (?, ?, ?, ?, ?, ?)
+    `;
     try {
-        const [inviteeRows] = await database_1.default.query('SELECT * FROM users WHERE id = ?', [invitee]);
-        if (inviteeRows) {
-            return null;
-        }
-        const [inviterRows] = await database_1.default.query('SELECT * FROM `groups` WHERE memberIds = ?', [inviter]);
-        if (!inviterRows) {
-            return null;
-        }
-        const query = `
-            INSERT INTO groupinvites (id, inviter, invitee, invitedTo, status, notificationSent)
-            VALUES (?, ?, ?, ?, ?, ?)
-            
-        `;
         const [result] = await database_1.default.query(query, [id, inviter, invitee, groupId, status, notificationSent]);
         return result;
     }
