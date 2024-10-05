@@ -156,8 +156,12 @@ const alterEventQuery = async (id, name, description, startDate, endDate, locati
             // Check if the member already has a score
             const existingScoreIndex = currentScores.findIndex((s) => s.memberId === memberId);
             if (existingScoreIndex >= 0) {
-                // If the score exists, add the new score to the existing one
+                // If the score exists, add or subtract the new score from the existing one
                 currentScores[existingScoreIndex].score += score;
+                // Ensure score doesn't go below zero
+                if (currentScores[existingScoreIndex].score < 0) {
+                    currentScores[existingScoreIndex].score = 0;
+                }
             }
             else {
                 // If the score does not exist, add a new entry
@@ -196,19 +200,10 @@ const alterEvent = async (req, res, next) => {
     }
     catch (error) {
         console.error('Error updating event:', error);
-        res.status(500).send({ error: 'Internal Server Error', details: error.message }); // More informative response
+        res.status(500).send({ error: 'Internal Server Error' }); // More informative response
     }
 };
 exports.alterEvent = alterEvent;
-// Helper function to update scores
-const updateEventScores = async (eventId, scoreByMember) => {
-    const scoreUpdates = scoreByMember.map(({ memberId, score }) => database_1.default.query(`
-            INSERT INTO scorebyevent (eventId, memberId, score)
-            VALUES (?, ?, ?)
-            ON DUPLICATE KEY UPDATE score = VALUES(score);
-        `, [eventId, memberId, score]));
-    await Promise.all(scoreUpdates);
-};
 const deleteEventQuery = async (id) => {
     const query = `
         DELETE FROM events
