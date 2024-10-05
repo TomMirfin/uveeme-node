@@ -12,6 +12,7 @@ const events_1 = __importDefault(require("./routes/events"));
 const scores_1 = __importDefault(require("./routes/scores"));
 const auth_1 = __importDefault(require("./routes/auth"));
 const cors_1 = __importDefault(require("cors"));
+const invites_1 = __importDefault(require("./routes/invites"));
 const passport_1 = __importDefault(require("passport"));
 const passport_config_1 = require("./config/passport-config");
 dotenv_1.default.config();
@@ -30,6 +31,7 @@ app.use('/groups', groups_1.default);
 app.use('/events', events_1.default);
 app.use('/scores', scores_1.default);
 app.use('/auth', auth_1.default);
+app.use('/invited', invites_1.default);
 app.get('/auth/test', (req, res) => {
     res.send('Test route is working!');
 });

@@ -8,7 +8,7 @@ import eventsRoutes from './routes/events';
 import scoresRouter from './routes/scores';
 import authRouter from './routes/auth';
 import cors from "cors";
-
+import inviteRouter from './routes/invites';
 import passport from 'passport';
 import { passportConfig } from './config/passport-config';
 dotenv.config();
@@ -31,6 +31,7 @@ app.use('/groups', groupsRoutes);
 app.use('/events', eventsRoutes);
 app.use('/scores', scoresRouter);
 app.use('/auth', authRouter)
+app.use('/invited', inviteRouter)
 app.get('/auth/test', (req, res) => {
     res.send('Test route is working!');
 });
