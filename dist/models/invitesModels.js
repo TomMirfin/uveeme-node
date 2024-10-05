@@ -64,7 +64,7 @@ const declineInviteQuery = async (inviteId) => {
     try {
         const query = `
             UPDATE groupinvites
-            SET status = 'DECLINED'
+            SET status = 'REJECTED'
             WHERE ID = ?
         `;
         const [result] = await database_1.default.query(query, [inviteId]);
