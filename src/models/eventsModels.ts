@@ -250,10 +250,9 @@ export const alterEvent = async (req: any, res: any, next: any) => {
         res.status(200).send({ message: 'Event updated successfully', rows });
     } catch (error) {
         console.error('Error updating event:', error);
-        res.status(500).send({ error: 'Internal Server Error' }); // More informative response
+        res.status(500).send({ error: 'Internal Server Error', details: error.message }); // More informative response
     }
 };
-
 
 
 
