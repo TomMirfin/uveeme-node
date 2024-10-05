@@ -134,7 +134,7 @@ export const alterEventQuery = async (
     endDate?: string,
     location?: string,
     attendeesToRemove: string[] = [],
-    scoreByMember?: { memberId: string, score: number }[] // New parameter for scores
+    scoreByMember?: { memberId: string; score: number }[] // New parameter for scores
 ) => {
     let fieldsToUpdate: string[] = [];
     let values: any[] = [];
@@ -173,8 +173,8 @@ export const alterEventQuery = async (
         values.push(location);
     }
 
-    // Include scoreByMember updates if provided
-    if (scoreByMember) {
+    // Include scoreByMember updates if provided and valid
+    if (Array.isArray(scoreByMember) && scoreByMember.length > 0) {
         fieldsToUpdate.push(`scoreByMember = ?`);
         values.push(JSON.stringify(scoreByMember)); // Convert scoreByMember to JSON
     }
