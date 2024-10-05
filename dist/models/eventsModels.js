@@ -37,7 +37,9 @@ const getEventsForGroupQuery = async (groupId) => {
     }
 };
 exports.getEventsForGroupQuery = getEventsForGroupQuery;
-const createEventQuery = async (name, description, fromGroup, location, startDate, endDate, attendees, scoreByMember, status = 'inactive') => {
+const createEventQuery = async (name, description, fromGroup, // groupId
+location, startDate, endDate, attendees, // Attendees passed explicitly
+scoreByMember, status = 'inactive') => {
     const id = (0, uuid_1.v4)();
     // Validate that startDate and endDate are valid Date objects
     if (!(startDate instanceof Date) || isNaN(startDate.getTime())) {
@@ -49,25 +51,38 @@ const createEventQuery = async (name, description, fromGroup, location, startDat
     // Format dates to YYYY-MM-DD
     const formattedStartDate = (0, moment_1.default)(startDate).format('YYYY-MM-DD');
     const formattedEndDate = (0, moment_1.default)(endDate).format('YYYY-MM-DD');
-    const query = `
-        INSERT INTO events (id, name, description, fromGroup, startDate, endDate, location, attendees, scoreByMember, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-    const values = [
-        id,
-        name,
-        description,
-        fromGroup,
-        formattedStartDate, // Use formatted dates here
-        formattedEndDate,
-        location,
-        JSON.stringify(attendees),
-        JSON.stringify(scoreByMember),
-        status
-    ];
     try {
+        // Fetch the group member IDs from the groups table
+        const groupQuery = `
+            SELECT memberIds FROM groups
+            WHERE id = ?
+        `;
+        const [groupRows] = await database_1.default.query(groupQuery, [fromGroup]);
+        if (groupRows.length === 0) {
+            throw new Error('Group not found');
+        }
+        // Assuming memberIds is a JSON array of member IDs
+        const groupMemberIds = groupRows[0].memberIds || [];
+        // Combine the group members and the explicitly passed attendees
+        const allAttendees = [...new Set([...groupMemberIds, ...attendees])];
         // Insert the event
-        await database_1.default.query(query, values);
+        const eventQuery = `
+            INSERT INTO events (id, name, description, fromGroup, startDate, endDate, location, attendees, scoreByMember, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+        const eventValues = [
+            id,
+            name,
+            description,
+            fromGroup,
+            formattedStartDate, // Use formatted dates here
+            formattedEndDate,
+            location,
+            JSON.stringify(allAttendees), // Store all attendees as JSON
+            JSON.stringify(scoreByMember),
+            status
+        ];
+        await database_1.default.query(eventQuery, eventValues);
         // Insert default scores into scorebyevent table
         for (const { memberId, score } of scoreByMember) {
             await database_1.default.query(`
