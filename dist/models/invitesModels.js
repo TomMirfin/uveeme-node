@@ -102,7 +102,7 @@ const getInvitesForGroupQuery = async (groupId) => {
     try {
         const query = `
             SELECT * FROM groupinvites
-            WHERE groupId = ?
+            WHERE invitedTo = ?
         `;
         const [rows] = await database_1.default.query(query, [groupId]);
         return rows;

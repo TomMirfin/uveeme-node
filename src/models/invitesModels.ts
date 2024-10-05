@@ -108,11 +108,11 @@ export const getInviteByIdQuery = async (id: number) => {
     }
 }
 
-export const getInvitesForGroupQuery = async (groupId: number) => {
+export const getInvitesForGroupQuery = async (groupId: string) => {
     try {
         const query = `
             SELECT * FROM groupinvites
-            WHERE groupId = ?
+            WHERE invitedTo = ?
         `;
         const [rows] = await db.query(query, [groupId]);
         return rows;
@@ -121,6 +121,7 @@ export const getInvitesForGroupQuery = async (groupId: number) => {
         throw error;
     }
 }
+
 
 export const getInvitesForUserQuery = async (id: number) => {
     try {
