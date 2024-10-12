@@ -23,11 +23,11 @@ exports.getAllGroupsQuery = getAllGroupsQuery;
 const getAllGroupsWithUserQuery = async (id) => {
     try {
         const query = `
-            SELECT * FROM \`groups\`
-            JOIN users
-            ON groups.id = users.associatedGroupsId
+            SELECT * 
+            FROM \`groups\`
+            WHERE JSON_CONTAINS(membersIds, JSON_QUOTE(?), '$')
         `;
-        const [result] = await database_1.default.query(query);
+        const [result] = await database_1.default.query(query, [id]);
         console.log(result);
         return result;
     }

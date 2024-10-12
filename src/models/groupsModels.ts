@@ -17,11 +17,12 @@ export const getAllGroupsQuery = async () => {
 export const getAllGroupsWithUserQuery = async (id: string) => {
     try {
         const query = `
-            SELECT * FROM \`groups\`
-            JOIN users
-            ON groups.id = users.associatedGroupsId
+            SELECT * 
+            FROM \`groups\`
+            WHERE JSON_CONTAINS(membersIds, JSON_QUOTE(?), '$')
         `;
-        const [result] = await db.query(query);
+
+        const [result] = await db.query(query, [id]);
         console.log(result);
         return result;
     } catch (error) {
@@ -29,6 +30,7 @@ export const getAllGroupsWithUserQuery = async (id: string) => {
         throw error;
     }
 }
+
 
 export const getGroupByIdQuery = async (id: string) => {
     try {
