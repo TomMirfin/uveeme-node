@@ -26,25 +26,23 @@ app.use((0, cors_1.default)());
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
 // Route handlersp
-app.use('/users', users_1.default);
-app.use('/groups', groups_1.default);
-app.use('/events', events_1.default);
-app.use('/scores', scores_1.default);
-app.use('/auth', auth_1.default);
-app.use('/invited', invites_1.default);
-app.get('/auth/test', (req, res) => {
-    res.send('Test route is working!');
+app.use("/users", users_1.default);
+app.use("/groups", groups_1.default);
+app.use("/events", events_1.default);
+app.use("/scores", scores_1.default);
+app.use("/auth", auth_1.default);
+app.use("/invited", invites_1.default);
+app.get("/auth/test", (req, res) => {
+    res.send("Test route is working!");
 });
-// this is what we are working on
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);
-    res.status(500).send('Something broke!');
+    res.status(500).send("Something broke!");
 });
-app.listen(Number(PORT), '0.0.0.0', () => {
+app.listen(Number(PORT), "0.0.0.0", () => {
     console.log(`Server is running on port ${PORT}`);
 });
-// Properly close the database connection when needed
 // process.on('SIGINT', () => {
 //     db.end().then(() => {
 //         console.log('Database connection closed.');
